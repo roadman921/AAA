@@ -1,0 +1,547 @@
+You are the speech-to-speech / voice-conversion agent for my Bachelor thesis project.
+
+I have recorded six FINAL scenario source utterances located at:
+
+C:\Users\pcai\Desktop\scenario_audio
+
+Files:
+
+S1_executive_take01.wav
+S1_executive_take02.wav
+S1_executive_take03.wav
+
+S2_customer_take01.wav
+S2_customer_take02.wav
+S2_customer_take03.wav
+
+You may COPY these files into the evaluation workspace as needed.
+
+Do NOT modify, overwrite, delete, or replace the originals.
+
+This is the FINAL scenario-linked technical demonstration for Chapter 7.
+
+The same six source recordings must be converted with:
+
+1. RVC
+2. Seed-VC
+
+The purpose is NOT to rank the systems.
+
+The purpose is to determine whether the two existing voice-conversion implementations can
+process scenario-relevant German speech while preserving linguistic content, moving the
+speaker embedding toward the target, and operating with acceptable technical stability.
+
+Do not expand the experiment.
+Do not tune parameters after seeing results.
+Do not cherry-pick outputs.
+
+
+==================================================
+1. VERIFY SOURCE FILES
+==================================================
+
+Copy the six files into the evaluation workspace.
+
+Create:
+
+01_SOURCE/source_manifest.csv
+
+For every source file record:
+
+scenario
+take
+original_path
+copied_path
+duration_s
+sample_rate
+channels
+bit_depth_or_encoding
+SHA256
+
+Do not alter the recordings except for deterministic format conversion required by a model.
+
+If resampling/mono conversion is required, preserve both:
+- original
+- prepared model input
+
+Document the exact preprocessing.
+
+
+==================================================
+2. FIXED GROUND-TRUTH TEXTS
+==================================================
+
+Scenario 1 exact intended text:
+
+Ich bin gerade zwischen zwei Terminen und die Zahlung muss heute noch bearbeitet werden. Die schriftliche Bestätigung reiche ich direkt danach nach.
+
+Scenario 2 exact intended text:
+
+Ich stehe gerade in der Apotheke und die Bestätigung in der App funktioniert nicht. Bitte helfen Sie mir mit der gestoppten Zahlung.
+
+Before evaluating converted outputs, transcribe all six ORIGINAL human recordings with the
+same finalized ASR protocol:
+
+faster-whisper large-v3-turbo
+German
+beam_size = 5
+temperature = 0
+
+Compare ASR(original source) against the intended text.
+
+If the human speaker made an actual spoken-word deviation from the intended text, DO NOT
+silently blame the conversion system later.
+
+Record the source baseline WER/CER.
+
+If ASR suggests a possible human speaking error that cannot be resolved reliably, mark it
+for human review instead of guessing.
+
+
+==================================================
+3. FIXED RVC CONFIGURATION
+==================================================
+
+Use ONE preselected RVC configuration for all six recordings.
+
+Use the already established final RVC_Audit8 configuration from the locked evidence.
+
+Verify from project evidence before running, but it is expected to correspond approximately to:
+
+- RVC v2
+- 40 kHz
+- RVC_Audit8 / approximately 800 epochs
+- final selected checkpoint
+- Harvest inference F0
+- pitch +2
+- FAISS index enabled
+- index rate 0.75
+
+Use the EXACT previously established final values.
+
+Do NOT:
+- compare Harvest vs RMVPE again
+- change pitch per scenario
+- tune index rate
+- test multiple checkpoints
+- optimize individual takes
+- retrain RVC
+
+Before inference create:
+
+02_RVC/rvc_fixed_config.md
+
+Then convert all six source recordings.
+
+Output names:
+
+S1_RVC_take01.wav
+S1_RVC_take02.wav
+S1_RVC_take03.wav
+
+S2_RVC_take01.wav
+S2_RVC_take02.wav
+S2_RVC_take03.wav
+
+
+==================================================
+4. FIXED SEED-VC CONFIGURATION
+==================================================
+
+Use ONE preselected Seed-VC configuration for all six source recordings.
+
+Use the final/baseline configuration already established in the locked project evidence.
+
+Use:
+- same Seed-VC model
+- same checkpoint
+- same target-speaker reference
+- same inference parameters
+- same preprocessing
+
+Do NOT:
+- parameter sweep
+- change reference audio
+- tune separately for executive/customer speech
+- choose a different configuration after hearing an output
+- generate multiple alternatives and keep the best
+
+Before inference create:
+
+03_SEEDVC/seedvc_fixed_config.md
+
+Then convert all six exact source recordings.
+
+Output names:
+
+S1_SEEDVC_take01.wav
+S1_SEEDVC_take02.wav
+S1_SEEDVC_take03.wav
+
+S2_SEEDVC_take01.wav
+S2_SEEDVC_take02.wav
+S2_SEEDVC_take03.wav
+
+If one generation fails or corrupts content, KEEP the result and classify the failure.
+
+Do not replace it with a better configuration.
+
+
+==================================================
+5. PROCESSING TIME
+==================================================
+
+For BOTH systems measure conversion processing time under a consistent documented method.
+
+For every conversion record:
+
+- system
+- scenario
+- take
+- source duration
+- conversion/inference time
+- output duration
+- RTF = processing_time / source_duration
+- whether model loading is included
+- whether preprocessing is included
+
+Prefer timing inference with the model already loaded.
+
+If RVC and Seed-VC necessarily use different timing scopes because of implementation,
+document the difference clearly.
+
+Do not call RTF conversational latency.
+
+
+==================================================
+6. CONTENT PRESERVATION — WER/CER
+==================================================
+
+Use the SAME ASR protocol for:
+
+- original six human source recordings
+- six RVC outputs
+- six Seed-VC outputs
+
+Use:
+
+faster-whisper large-v3-turbo
+German
+beam_size = 5
+temperature = 0
+
+No per-file tuning.
+
+For every file calculate:
+
+- ASR transcript
+- WER
+- CER
+- substitutions
+- deletions
+- insertions
+
+For converted outputs also calculate:
+
+delta_WER_vs_source
+delta_CER_vs_source
+
+Do NOT call delta_WER a "corrected WER."
+Raw WER remains the primary metric.
+
+Create:
+
+04_METRICS/sts_scenario_content.csv
+
+
+==================================================
+7. SPEAKER-EMBEDDING SIMILARITY
+==================================================
+
+Use the SAME finalized CAMPPlus implementation and target-speaker centroid used in:
+
+sts_chapter7_common_metrics_LOCKED.zip
+
+Do not create a new centroid.
+
+For every ORIGINAL source recording calculate:
+
+- similarity_to_target_centroid
+
+For every RVC and Seed-VC output calculate:
+
+- similarity_to_target_centroid
+- similarity_to_source
+- delta_similarity_vs_source
+
+where:
+
+delta_similarity_vs_source =
+converted_similarity_to_target
+-
+original_source_similarity_to_target
+
+Create:
+
+04_METRICS/sts_scenario_similarity.csv
+
+Do not invent a target-recognition threshold.
+
+CAMPPlus is not evidence of human speaker identification.
+
+
+==================================================
+8. OBJECTIVE FAILURE CLASSIFICATION
+==================================================
+
+For every converted output classify:
+
+- none
+- conversion crash
+- truncation
+- repeated word/phrase
+- missing linguistic content
+- inserted linguistic content
+- malformed ending
+- abnormal duration
+- other objectively identifiable failure
+
+Use:
+- WER/CER
+- ASR transcript
+- logs
+- waveform/duration evidence
+
+Do not classify subjective properties such as:
+- convincing
+- emotional
+- authoritative
+- realistic
+- target-like to a human
+
+Create:
+
+05_FAILURES/sts_scenario_failures.csv
+
+
+==================================================
+9. DO NOT RANK THE SYSTEMS
+==================================================
+
+Do not produce:
+
+"RVC is better than Seed-VC"
+or
+"Seed-VC is better than RVC"
+
+Instead report performance by metric.
+
+For example:
+
+- one system may preserve linguistic content more reliably
+- another may move the embedding differently
+- one may exhibit greater instability
+
+The systems have different architectures and operating assumptions, so this is a
+scenario-linked technical demonstration, not a general benchmark.
+
+
+==================================================
+10. COMBINED RESULTS
+==================================================
+
+Create:
+
+06_RESULTS/sts_scenario_demo.csv
+
+One row per:
+
+source recording × system
+
+Total expected converted rows:
+
+6 RVC
++
+6 Seed-VC
+=
+12
+
+Columns:
+
+scenario
+take
+source_filename
+system
+model_or_checkpoint
+configuration
+source_duration_s
+processing_time_s
+output_duration_s
+RTF
+source_WER
+output_WER
+delta_WER_vs_source
+source_CER
+output_CER
+delta_CER_vs_source
+source_similarity_to_target
+output_similarity_to_target
+delta_similarity_vs_source
+similarity_to_source
+failure_status
+output_filename
+
+
+==================================================
+11. DESCRIPTIVE SUMMARY ONLY
+==================================================
+
+For each combination:
+
+RVC / Scenario 1
+RVC / Scenario 2
+Seed-VC / Scenario 1
+Seed-VC / Scenario 2
+
+report:
+
+n = 3
+
+and descriptive:
+
+- mean/min/max WER
+- mean/min/max CER
+- mean/min/max delta_WER
+- mean/min/max CAMPPlus-to-target
+- mean/min/max delta similarity
+- mean/min/max RTF
+- number/type of failures
+
+Standard deviation may be reported descriptively if useful.
+
+Do NOT perform:
+- significance testing
+- confidence intervals implying population inference
+- claims of general system superiority
+
+
+==================================================
+12. HUMAN LISTENING TASKS
+==================================================
+
+Do NOT perform a broad subjective evaluation yourself.
+
+Create:
+
+07_HUMAN_REVIEW/HUMAN_LISTENING_SET.md
+
+Prepare a small, organized listening set containing:
+
+Original:
+- all 6 human recordings
+
+RVC:
+- all 6 corresponding outputs
+
+Seed-VC:
+- all 6 corresponding outputs
+
+The human evaluator will later assess limited perceptual properties.
+
+Do NOT tell the human evaluator which output is expected to be better.
+
+If practical, create anonymized copies with neutral IDs such as:
+
+A01.wav
+A02.wav
+...
+
+and preserve the key separately:
+
+07_HUMAN_REVIEW/blinding_key.csv
+
+The later human evaluation may assess:
+- obvious target-speaker resemblance
+- preservation of intended forceful/distressed delivery
+- metallic/synthetic artifacts
+- obvious content errors
+
+But DO NOT conduct or score that evaluation now.
+
+
+==================================================
+13. FINAL REPORT
+==================================================
+
+Create:
+
+00_REPORT/STS_SCENARIO_DEMO_REPORT.md
+
+Answer precisely:
+
+1. Were all 12 planned conversions completed?
+2. How well did RVC preserve linguistic content?
+3. How well did Seed-VC preserve linguistic content?
+4. How much did each system move CAMPPlus similarity toward the target compared with
+   the original source speaker?
+5. How stable were results across the three takes?
+6. What processing time/RTF was observed?
+7. What objective failures occurred?
+8. Did Scenario 1 and Scenario 2 expose different technical behavior?
+9. Does any metric demonstrate human target-speaker recognition?
+   NO.
+10. Does this demonstration establish deception success?
+   NO.
+
+Clearly distinguish:
+
+[MEASURED]
+[DERIVED]
+[OBJECTIVE FAILURE]
+[QUALITATIVE — HUMAN REVIEW REQUIRED]
+[NOT SUPPORTED]
+
+
+==================================================
+14. REPRODUCIBILITY
+==================================================
+
+Include:
+
+- copied source WAVs
+- prepared source WAVs if applicable
+- exact RVC configuration
+- exact Seed-VC configuration
+- all 12 converted outputs
+- inference logs
+- timing data
+- ASR scripts/settings
+- WER/CER scripts
+- CAMPPlus scripts
+- target-centroid reference
+- combined CSV
+- software versions / commits
+
+Do not include unnecessary large model weights.
+
+
+==================================================
+15. FINAL PACKAGE
+==================================================
+
+Create:
+
+sts_scenario_demo_FINAL.zip
+
+Report:
+
+1. full path
+2. ZIP size
+3. whether all 12 planned conversions completed
+4. main RVC content result
+5. main Seed-VC content result
+6. main speaker-similarity result
+7. main timing result
+8. objective failures
+9. whether any source transcript requires my personal listening review
+10. location of the prepared human-listening set
