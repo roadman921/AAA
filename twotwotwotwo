@@ -1,0 +1,68 @@
+Finalize the existing STS Chapter 7 common-metrics package using the following
+HUMAN-VERIFIED transcript decisions.
+
+These decisions were made by directly listening to the ambiguous audio segments:
+
+1. hist year:
+   1972
+
+2. hist article:
+   "das spezifische Technik"
+
+   IMPORTANT:
+   Preserve this exactly as spoken even though the grammatical form may be unusual.
+   Do not silently correct it to "die spezifische Technik".
+
+3. hist verb:
+   übertragen
+
+4. hist final phrase:
+   "Bla und Bla"
+
+5. prepared phrase:
+   "die Seiten gereiht hat"
+
+6. prepared verb:
+   reihen
+
+Use these human decisions to construct the final verbatim and normalized
+ground-truth transcripts.
+
+Then:
+
+1. Recalculate WER and CER for the already evaluated original, RVC, and Seed-VC
+   files.
+
+2. Recalculate substitutions, deletions, and insertions.
+
+3. Recalculate delta_WER_vs_source and delta_CER_vs_source.
+
+4. Update the final report and CSVs.
+
+5. Mark these transcript decisions explicitly as:
+   [HUMAN-VERIFIED]
+
+6. Do NOT:
+   - generate new audio,
+   - retrain anything,
+   - test additional configurations,
+   - create a new CAMPPlus reference set,
+   - rerun speaker similarity unless transcript processing somehow requires it,
+   - perform additional ASR experiments.
+
+The existing common CAMPPlus results should remain as they are. Add one methodological
+qualification that the common target-speaker centroid consists of authentic target-speaker
+speech, but the selected recordings are not an independently held-out evaluation corpus
+relative to all RVC training material. Therefore the similarity results are used only as
+descriptive embedding measurements and not as estimates of generalization performance.
+
+Create:
+
+sts_chapter7_common_metrics_LOCKED.zip
+
+and report only:
+
+- final WER/CER table,
+- final CAMPPlus table,
+- corrections caused by the human-verified transcripts,
+- any remaining evidence problem important enough to prevent use in Chapter 7.
