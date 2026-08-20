@@ -1,0 +1,114 @@
+Prepare a blinded listening package for the final Chapter 7 scenario demonstration.
+
+Use ONLY the ORIGINAL final scenario-demo outputs:
+
+- 6 XTTS outputs from tts_scenario_demo_FINAL
+- 6 RVC outputs from sts_scenario_demo_FINAL
+- 6 Seed-VC outputs from sts_scenario_demo_FINAL
+
+Do NOT use the normalized-input STS sensitivity-check outputs.
+
+Create one randomized listening set containing exactly 18 WAV files.
+
+Rename them using neutral IDs:
+
+P01.wav
+P02.wav
+...
+P18.wav
+
+Randomize the order so that system, scenario, and take cannot be inferred from filenames.
+
+Create:
+
+blinding_key.csv
+
+with:
+
+blind_id
+system
+scenario
+take
+original_filename
+
+Keep the blinding key separate from the listening folder.
+
+Also copy the six original human STS source recordings into a separate folder:
+
+REFERENCE_SOURCE/
+
+These are references for the intended executive/distressed delivery and must NOT be scored as system outputs.
+
+Also provide 1 or 2 clean genuine target-speaker reference recordings in:
+
+REFERENCE_TARGET/
+
+These are only references for remembering the target speaker's voice and must NOT be scored.
+
+Do not normalize, edit, enhance, or otherwise change any evaluation audio.
+
+Create:
+
+LISTENING_SHEET.csv
+
+with the 18 blind IDs and empty columns:
+
+blind_id
+target_speaker_resemblance_1to5
+content_intelligibility_1to5
+scenario_delivery_1to5
+audio_naturalness_1to5
+short_observation
+
+Also create:
+
+LISTENING_INSTRUCTIONS.md
+
+with these definitions:
+
+TARGET-SPEAKER RESEMBLANCE
+1 = clearly does not resemble the target speaker
+2 = weak resemblance
+3 = some recognizable target characteristics
+4 = clear resemblance
+5 = strong resemblance to the target
+
+CONTENT / INTELLIGIBILITY
+1 = major content or intelligibility failure
+2 = several important problems
+3 = understandable but noticeable errors
+4 = almost completely clear/correct
+5 = completely clear and correct
+
+SCENARIO DELIVERY
+
+For Scenario 1:
+firm, impatient, authoritative and time-sensitive delivery.
+
+For Scenario 2:
+distressed, overwhelmed and urgent request for assistance.
+
+1 = intended delivery absent
+2 = weak
+3 = partially conveyed
+4 = clearly conveyed
+5 = strongly conveyed
+
+AUDIO NATURALNESS
+1 = severe synthetic/metallic/unstable artifacts
+2 = strong artifacts
+3 = noticeable artifacts
+4 = minor artifacts
+5 = little or no obvious artifact
+
+The evaluator must NOT assess:
+- deception success
+- likelihood of compliance
+- whether an employee would believe the caller
+- real/fake detection accuracy
+
+The result is a structured single-author perceptual inspection, not a listener study.
+
+Package everything as:
+
+chapter7_blinded_listening_set.zip
