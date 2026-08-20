@@ -1,0 +1,318 @@
+I reviewed the STS Chapter 7 evidence package.
+
+Before any new voice-conversion generation or training is performed, I need one
+small follow-up evaluation using ONLY EXISTING audio files.
+
+The objective is to obtain two scientifically useful measurements:
+
+1. content preservation (WER/CER)
+2. speaker similarity under ONE common evaluation protocol
+
+Do NOT train or generate any new RVC or Seed-VC audio.
+
+Create:
+
+sts_chapter7_common_metrics.zip
+
+==================================================
+1. EXACT TRANSCRIPTS OF THE THREE SOURCE UTTERANCES
+==================================================
+
+The previous evidence package established three source recordings:
+
+- seedvc_hist_lecturer.wav
+- seedvc_test01_lecturer.wav
+- source_mine_prepared_48k.wav
+
+The exact spoken text was not preserved.
+
+Establish the verbatim German transcript of EACH source recording.
+
+Do not simply accept an automatic ASR transcript as ground truth.
+
+Procedure:
+
+1. Listen to the original source audio.
+2. Produce a manual verbatim transcript.
+3. Use ASR only as an aid/check if useful.
+4. Preserve hesitations, repeated words or corrections if they are genuinely spoken.
+5. Also create a normalized transcript suitable for WER/CER.
+
+Create:
+
+01_TRANSCRIPTS/source_ground_truth.csv
+
+Columns:
+
+source_id
+source_wav
+verbatim_transcript
+normalized_transcript
+duration_s
+notes
+
+Document exactly how normalization is performed.
+
+Do not silently correct what the speaker actually said.
+
+==================================================
+2. COMMON CONTENT-INTEGRITY EVALUATION
+==================================================
+
+Use one fixed German-capable ASR model for the complete evaluation.
+
+Prefer an existing installed Faster-Whisper/Whisper setup if available.
+Record the exact:
+
+- model
+- version
+- language setting
+- decoding settings
+- normalization procedure
+
+Do not tune the ASR separately for individual systems.
+
+First transcribe the ORIGINAL source WAVs.
+
+Calculate WER and CER against the manually established ground-truth transcript.
+This establishes the ASR baseline.
+
+Then evaluate the corresponding existing converted outputs.
+
+At minimum include:
+
+SOURCE hist:
+- original seedvc_hist_lecturer.wav
+- rvc_hist_lecturer.wav
+- Seed-VC baseline output corresponding to hist
+
+SOURCE test01:
+- original seedvc_test01_lecturer.wav
+- rvc_test01_lecturer.wav
+- Seed-VC baseline output corresponding to test01
+
+SOURCE prepared:
+- original source_mine_prepared_48k.wav
+- rvc_harvest_p0.wav
+- rvc_harvest_p2.wav
+- rvc_rmvpe_p0.wav
+- rvc_rmvpe_p2.wav
+- result_baseline_newrec.wav
+
+For every file record:
+
+source_id
+system
+model/checkpoint
+output_wav
+ASR_transcript
+WER
+CER
+substitutions
+deletions
+insertions
+reference_word_count
+
+Create:
+
+02_CONTENT/content_metrics.csv
+
+and:
+
+02_CONTENT/content_analysis.md
+
+The analysis must identify the ACTUAL words affected where possible.
+
+For example, if Seed-VC omitted a word, state exactly which word was omitted.
+
+Do not merely say "content instability".
+
+IMPORTANT:
+The purpose is not to claim that ASR equals human intelligibility.
+WER/CER are objective proxies for preservation of linguistic content.
+
+Clearly distinguish genuine conversion errors from errors already made by the ASR
+on the original source recording.
+
+==================================================
+3. COMMON SPEAKER-SIMILARITY PROTOCOL
+==================================================
+
+The previous package used different reference clips for some RVC and Seed-VC
+measurements. Do not directly compare those old scores.
+
+Re-evaluate the EXISTING outputs with ONE common protocol.
+
+Use the same CAMPPlus implementation for every file.
+
+Instead of relying on one target-reference recording, construct a small authentic
+target-speaker reference set from the existing lecturer recordings.
+
+Prefer approximately 10 clean target-speaker clips representing the same person.
+
+Requirements:
+
+- do not include generated/converted audio
+- record exact filenames
+- duration
+- SHA-256
+- source lesson
+- selection criterion
+
+Where possible, exclude:
+- seedvc_ref_lecturer.wav itself
+- target_gt_lecturer_mono.wav itself
+- the exact XTTS golden reference clip audio4_chunk_080.wav
+
+The purpose is to avoid making the common metric depend on the exact prompt/reference
+used by one system.
+
+Create:
+
+03_SIMILARITY/target_reference_set.csv
+
+Compute CAMPPlus embeddings for the authentic target clips and construct a
+normalized target-speaker centroid.
+
+Also calculate:
+
+A. genuine-target baseline
+   Similarity of authentic target clips to the target-speaker centroid.
+   Prefer leave-one-out centroid similarity if practical.
+
+B. source-target baseline
+   Similarity of each original author/source utterance to the target-speaker centroid.
+
+C. converted-output similarity
+   Similarity of each evaluated RVC/Seed-VC output to the SAME target-speaker centroid.
+
+At minimum evaluate all outputs listed in Section 2.
+
+Create:
+
+03_SIMILARITY/common_speaker_similarity.csv
+
+Columns should include:
+
+source_id
+system
+model
+output_wav
+campplus_similarity_to_target_centroid
+campplus_similarity_to_source
+duration_s
+
+Also create:
+
+03_SIMILARITY/similarity_summary.md
+
+Report:
+
+- genuine target mean/min/max
+- source-to-target baseline
+- RVC results
+- Seed-VC results
+
+Do NOT invent a threshold such as:
+"above X means the person would be recognized."
+
+Do NOT interpret CAMPPlus as human perception.
+
+It is an objective speaker-embedding similarity measure only.
+
+==================================================
+4. IMPORTANT RVC MODEL DISTINCTION
+==================================================
+
+Keep these models separate:
+
+GermanLecturerRVC / approximately e190
+and
+RVC_Audit8 / e800
+
+Do NOT attribute the old 0.692 Beatrice ECAPA result to either RVC model.
+
+For the two GermanLecturerRVC outputs, the new common CAMPPlus calculation will
+provide the first properly persisted similarity values.
+
+==================================================
+5. SEED-VC CONTENT FAILURES
+==================================================
+
+The previous package stated that the remembered Seed-VC content failures were not
+persisted.
+
+Use the WER/CER/transcript analysis above to determine whether content alteration is
+actually visible in the EXISTING retained outputs.
+
+If the baseline outputs preserve the text correctly but other existing Seed-VC
+variants clearly contain failures, you may additionally inspect a SMALL,
+well-identified subset of existing variant WAVs.
+
+Do not inspect all 52 variants simply to produce more numbers.
+
+If obvious failure examples exist, document:
+- configuration
+- intended text
+- actual output transcript
+- deletion/substitution/repetition
+- evidence file
+
+Do not manufacture an example to support the previous qualitative memory.
+
+If the retained evidence does not demonstrate the remembered failure, state that
+clearly.
+
+==================================================
+6. REPRODUCIBILITY
+==================================================
+
+Include:
+
+- manual ground-truth transcripts
+- ASR script
+- WER/CER script
+- CAMPPlus evaluation script
+- target-reference-set manifest
+- all CSV outputs
+- exact package/environment versions
+- normalization rules
+
+Do not include large model weights.
+
+==================================================
+7. FINAL REPORT
+==================================================
+
+Create:
+
+00_REPORT/COMMON_METRICS_REPORT.md
+
+Start with:
+
+A. Results that can be stated quantitatively in Chapter 7
+B. Results that require qualification
+C. Previous claims that are now confirmed
+D. Previous claims that are NOT confirmed
+
+Especially answer:
+
+1. Do the existing Seed-VC outputs objectively exhibit more content errors than
+   the corresponding RVC outputs?
+
+2. What are the common-protocol CAMPPlus similarities for RVC and Seed-VC?
+
+3. How do these values compare with authentic-target and source-target baselines?
+
+4. Does the smaller GermanLecturerRVC model actually have a lower target-speaker
+   similarity than RVC_Audit8?
+
+5. Is the remembered claim that Seed-VC had better target resemblance but worse
+   content stability actually supported by the retained evidence?
+
+Do NOT perform new RVC or Seed-VC inference.
+
+Finally create:
+sts_chapter7_common_metrics.zip
+
+and report its path and size.
