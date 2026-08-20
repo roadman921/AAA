@@ -1,0 +1,600 @@
+You have access to my speech-to-speech / voice-conversion project folder and the associated project knowledge.
+
+I am preparing Chapter 7 of a cybersecurity Bachelor thesis. The chapter is an exploratory technical validation of voice cloning and voice conversion. I have already reconstructed the TTS/XTTS evidence separately.
+
+Your task is now to create a complete evidence package for the SPEECH-TO-SPEECH systems only, primarily:
+
+1. RVC
+2. Seed-VC
+
+Do NOT include XTTS/TTS except where an existing project file explicitly compares it with STS.
+
+IMPORTANT RULES
+
+- Do NOT invent, infer, or approximate missing values.
+- Do NOT run new training, inference, benchmarks, similarity calculations, WER/CER calculations, or other experiments at this stage.
+- Use only existing project files, WAVs, logs, scripts, configs, checkpoints, notes, and metadata.
+- If a value can be deterministically derived from existing files, such as WAV duration or file count, calculate it and preserve the script.
+- Clearly distinguish:
+  [M] directly measured/recorded
+  [D] deterministically derived
+  [Q] qualitative observation
+  [MISSING] unavailable
+- Report contradictions instead of silently resolving them.
+- Do not modify or overwrite original files.
+- Keep RVC and Seed-VC evidence clearly separated.
+- German-only evaluation must remain explicit.
+- Do not claim deception success or human convincingness unless such a study actually exists.
+
+Create:
+
+sts_chapter7_evidence.zip
+
+with approximately this structure:
+
+01_REPORT/
+02_ENVIRONMENT/
+03_SOURCE_UTTERANCES/
+04_TARGET_REFERENCE/
+05_RVC/
+06_SEEDVC/
+07_COMMON_OUTPUT_INVENTORY/
+08_METRICS/
+09_ANOMALIES/
+10_REPRODUCIBILITY/
+11_MISSING_INFORMATION/
+
+==================================================
+1. MASTER REPORT
+==================================================
+
+Create:
+
+01_REPORT/STS_EVIDENCE_REPORT.md
+
+At the very beginning include four short sections:
+
+1. Verified facts suitable for Chapter 7
+2. Derived results suitable for Chapter 7
+3. Qualitative observations only
+4. Claims the evidence does NOT support
+
+Then document the following.
+
+==================================================
+2. COMMON HARDWARE / SOFTWARE ENVIRONMENT
+==================================================
+
+Recover and verify:
+
+- operating system
+- CPU
+- RAM
+- GPU
+- GPU VRAM
+- Python version(s)
+- PyTorch version(s)
+- CUDA version(s)
+- important dependencies
+- whether all processing was local
+
+If RVC and Seed-VC used different environments, document them separately.
+
+==================================================
+3. COMMON SOURCE UTTERANCES
+==================================================
+
+I believe RVC and Seed-VC were tested using the same two German source sentences recorded by me.
+
+VERIFY this instead of assuming it.
+
+For each source utterance recover:
+
+- exact transcript
+- exact source WAV filename
+- duration
+- sample rate
+- channels
+- encoding
+- recording date if available
+- whether delivery was neutral or intentionally expressive
+- any documented microphone/distance/environment information
+- whether the same exact WAV was fed into both RVC and Seed-VC
+- whether any preprocessing occurred before conversion
+
+Create:
+
+03_SOURCE_UTTERANCES/source_utterances.csv
+
+with at least:
+
+utterance_id,transcript,wav_path,duration_s,sample_rate,channels,used_rvc,used_seedvc,notes
+
+If privacy permits within this thesis-analysis package, include ONLY these exact source utterance WAVs.
+Do not include unrelated recordings.
+
+If they should not be copied, include metadata and hashes instead.
+
+==================================================
+4. TARGET-SPEAKER MATERIAL
+==================================================
+
+For RVC and Seed-VC separately document exactly what target-speaker material was used.
+
+For each system determine:
+
+- original amount of available target-speaker audio
+- amount actually used
+- exact files/folders
+- preprocessing
+- slicing
+- resampling
+- silence removal
+- denoising
+- normalization
+- target sample rate
+- final usable duration
+
+For Seed-VC identify the exact target reference clip:
+- filename
+- exact duration
+- format
+- whether it was the same speaker material used for RVC
+- any preprocessing
+
+If a target reference WAV can be included privately in this analysis package, include only the exact reference used.
+Otherwise provide metadata + checksum.
+
+==================================================
+5. RVC — EXACT IMPLEMENTATION
+==================================================
+
+Recover precisely:
+
+- repository/project name
+- exact Git commit/hash
+- RVC version/generation, e.g. v2
+- sample rate
+- architecture/model size
+- pretrained weights used
+- feature extractor
+- F0 method used during preprocessing/training
+- F0 method used during final inference
+- pitch/transposition value
+- index/FAISS configuration
+- index rate
+- filter radius
+- RMS mix rate
+- protect value
+- hop length
+- any other relevant inference parameters
+
+Do not assume my remembered settings are correct.
+
+I currently remember approximately:
+- RVC v2
+- 40 kHz
+- RMVPE during training/preparation
+- Harvest during final inference
+- pitch +2
+- FAISS index
+- index rate 0.75
+
+VERIFY each item from project evidence.
+
+Copy relevant configuration, command lines, scripts and logs.
+
+==================================================
+6. RVC TRAINING DATA AND TRAINING
+==================================================
+
+Document the full training pipeline.
+
+Recover:
+
+- total raw target-speaker duration
+- processed/sliced duration used for training
+- number of sliced files
+- slicing parameters if available
+- sample rate conversion
+- feature extraction process
+- F0 extraction process
+- training/validation split if any
+- batch size
+- epochs
+- save frequency
+- learning parameters if recorded
+- pretrained model
+- GPU
+- training duration
+- checkpoint sizes
+- final checkpoint chosen and why
+
+I remember approximately:
+- ~159 min raw material
+- ~31.59 min sliced material
+- a larger model around 800 epochs
+- training took approximately 7–8 hours
+
+VERIFY these values.
+
+Include relevant:
+- preprocess.log
+- extract logs
+- train.log
+- config.json
+- filelists
+- manifests
+- checkpoint metadata
+
+Do NOT include huge redundant model checkpoints unless necessary.
+If model files are too large, include filenames, sizes, hashes and metadata.
+
+==================================================
+7. RVC MODEL ITERATIONS
+==================================================
+
+The project may contain more than one RVC training/model attempt.
+
+Identify ALL meaningful model versions.
+
+For each provide:
+
+- model/checkpoint identifier
+- training material
+- epochs
+- model size
+- date
+- settings
+- outputs generated with it
+- existing speaker-similarity result
+- qualitative notes
+
+I remember there being:
+- an earlier/smaller model
+- a later/larger model around 800 epochs
+
+Do not merge these results.
+
+==================================================
+8. RVC EXISTING SPEAKER-SIMILARITY RESULTS
+==================================================
+
+This is critical.
+
+Find every existing CAMPPlus or other speaker-embedding similarity measurement.
+
+For EACH score recover:
+
+- exact source/output WAV tested
+- exact target/reference WAV
+- embedding model/framework
+- script used
+- preprocessing
+- similarity formula, e.g. cosine similarity
+- score
+- model/checkpoint corresponding to the output
+- whether multiple scores were averaged
+- number of samples
+- date/log/source of result
+
+I remember approximately:
+- smaller RVC model: ~0.691
+- larger RVC model: roughly ~0.92–0.96
+
+DO NOT use these remembered numbers unless the files verify them.
+
+Create:
+
+08_METRICS/rvc_similarity_results.csv
+
+If only one or a few hand-selected outputs were measured, explicitly state this.
+Do not present them as population statistics.
+
+==================================================
+9. RVC OUTPUTS AND QUALITATIVE OBSERVATIONS
+==================================================
+
+Inventory all meaningful RVC outputs.
+
+Determine:
+
+- total retained output count
+- approximate total conversion runs if logs allow
+- which outputs correspond to the two final source sentences
+- which model/checkpoint produced each
+- exact output durations and formats
+- failures/retries
+
+Recover existing qualitative notes concerning:
+- target-speaker resemblance
+- intelligibility
+- metallic/artificial sound
+- prosody preservation
+- pronunciation/content stability
+- difference between smaller and larger model
+
+Do not convert subjective impressions into scores.
+
+I remember listening to approximately 15–20 outputs and that the larger model could obtain high embedding similarity while perceptual resemblance was still unsatisfactory.
+
+VERIFY what the records actually support.
+
+==================================================
+10. RVC TIMING / OPERATIONAL COST
+==================================================
+
+Find any existing measurements of:
+
+- preprocessing time
+- feature/F0 extraction time
+- training time
+- model loading time
+- conversion/inference time
+- output duration
+- RTF
+- latency
+
+If no controlled inference benchmark exists, state this clearly.
+
+Do NOT derive conversational real-time capability from an isolated processing time unless the measurement supports it.
+
+==================================================
+11. SEED-VC — EXACT IMPLEMENTATION
+==================================================
+
+Recover:
+
+- repository/project
+- exact Git commit/hash
+- model/version
+- architecture/model identifier
+- checkpoint
+- Python/PyTorch/CUDA environment
+- target/reference audio handling
+- source-audio handling
+- inference script/command
+- all relevant inference parameters
+
+I remember a commit approximately:
+51383efd921027683c89e5348211d93ff12ac2a8
+
+VERIFY it.
+
+==================================================
+12. SEED-VC CONFIGURATION EXPLORATION
+==================================================
+
+Identify all tested Seed-VC configurations.
+
+For each configuration record:
+
+- config/variant ID
+- exact parameter changes
+- source utterance
+- target reference
+- output filename
+- result status
+- any existing qualitative notes
+
+I remember approximately:
+- ~25 configuration variants
+- ~20 outputs listened to
+- target reference around 23 seconds
+
+VERIFY all counts.
+
+Create:
+
+06_SEEDVC/seedvc_configurations.csv
+
+==================================================
+13. SEED-VC CONTENT INTEGRITY
+==================================================
+
+This is critical.
+
+Find all documented examples of:
+
+- missing words
+- substituted words
+- malformed word endings
+- repeated words/phrases
+- loops
+- truncated output
+- altered sentence content
+
+For each identifiable failure record:
+
+- intended transcript
+- source WAV
+- output WAV
+- configuration
+- observed error
+- whether manually observed or automatically measured
+- whether output was rejected/retried
+
+Create:
+
+09_ANOMALIES/seedvc_content_failures.csv
+
+If actual transcripts of the generated outputs exist, preserve them.
+If they do not exist, do NOT invent transcriptions.
+
+==================================================
+14. SEED-VC SPEAKER RESEMBLANCE
+==================================================
+
+Find whether any objective speaker-similarity metric was ever computed for Seed-VC.
+
+If yes, document it with the same provenance detail as RVC.
+
+If no, state clearly:
+
+[MISSING] No verified objective Seed-VC speaker-similarity measurement exists.
+
+Recover only existing qualitative observations about whether Seed-VC sounded more or less like the target than RVC.
+
+==================================================
+15. SEED-VC TIMING
+==================================================
+
+Recover any existing:
+
+- model-loading time
+- inference/conversion time
+- source duration
+- output duration
+- RTF
+- GPU memory use
+
+If timings were not collected under controlled conditions, state that.
+
+==================================================
+16. SAME-INPUT COMPARISON
+==================================================
+
+Determine whether RVC and Seed-VC actually converted the SAME two source WAVs.
+
+If yes, create a factual comparison table:
+
+08_METRICS/common_input_output_map.csv
+
+Columns:
+
+utterance_id
+source_wav
+transcript
+rvc_output
+rvc_model
+seedvc_output
+seedvc_config
+source_duration
+rvc_duration
+seedvc_duration
+existing_rvc_similarity
+existing_seedvc_similarity
+documented_rvc_content_issue
+documented_seedvc_content_issue
+
+Do NOT rank the systems as “better” unless evidence supports the specific criterion.
+
+==================================================
+17. ANOMALIES AND FAILED ATTEMPTS
+==================================================
+
+Create a complete catalog for both systems:
+
+- training failures
+- inference crashes
+- dependency problems
+- bad checkpoints
+- unusable outputs
+- loops
+- content corruption
+- model/configuration attempts later abandoned
+
+Separate:
+- technical execution failure
+- content-integrity failure
+- speaker-identity failure
+- qualitative audio-quality problem
+
+==================================================
+18. REPRODUCIBILITY
+==================================================
+
+Include the evidence needed to reproduce the STS work with other suitable consented audio:
+
+RVC:
+- repository commit
+- environment
+- preprocessing commands/scripts
+- training config
+- filelist structure
+- F0 settings
+- feature settings
+- train command
+- inference settings
+- selected checkpoint/index information
+
+Seed-VC:
+- repository commit
+- environment
+- inference command/script
+- target-reference handling
+- source handling
+- configuration variants used
+
+Include manifests and hashes where practical.
+
+Do not include large third-party model weights if identifiable by public model/version.
+
+==================================================
+19. FILE INVENTORY
+==================================================
+
+Create:
+
+10_REPRODUCIBILITY/file_inventory.csv
+
+For every packaged file record:
+
+- ZIP path
+- original path
+- type
+- size
+- purpose
+- original vs derived
+- SHA-256 where practical
+
+==================================================
+20. MISSING INFORMATION
+==================================================
+
+Create:
+
+11_MISSING_INFORMATION/MISSING_INFORMATION.md
+
+Explicitly identify anything that would be useful for Chapter 7 but cannot be recovered, especially:
+
+- exact training duration
+- exact output counts
+- similarity-score provenance
+- source/output transcript mapping
+- WER/CER
+- controlled inference timing
+- Seed-VC speaker similarity
+- systematic human listening evaluation
+
+==================================================
+21. DO NOT RUN NEW TESTS
+==================================================
+
+Do NOT execute new tests yet.
+
+At the end of the report create:
+
+"Recommended additional tests"
+
+For each proposed test state:
+- what evidence is missing,
+- why it matters,
+- whether it can use existing WAVs,
+- whether it requires new generation/training,
+- the minimum scientifically useful test.
+
+In particular, flag whether the existing files would permit a COMMON evaluation across XTTS, RVC, and Seed-VC using:
+
+- the same speaker-similarity model,
+- WER/CER,
+- source/output duration,
+- RTF or processing time where available.
+
+Do not perform these measurements yet.
+
+Finally create `sts_chapter7_evidence.zip` and report:
+1. full path,
+2. ZIP size,
+3. major missing evidence,
+4. whether RVC and Seed-VC were verified to use the same source utterances.
