@@ -1,0 +1,132 @@
+Correct the Chapter 7 blinded listening package for playback loudness only.
+
+IMPORTANT:
+- Do NOT change any original experiment files.
+- Do NOT regenerate XTTS, RVC, or Seed-VC.
+- Do NOT recalculate WER/CER, CAMPPlus, RTF, or any objective metric.
+- This normalization is ONLY for the human listening copies.
+- Preserve the original blinding/randomization and all blinding keys.
+
+The current REFERENCE_SOURCE files are valid full recordings, but several are extremely
+quiet. This makes the human listening evaluation unreliable at a fixed playback volume.
+
+Create:
+
+chapter7_blinded_listening_set_PLAYBACK_NORMALIZED.zip
+
+
+1. CREATE LISTENING-ONLY COPIES
+
+Apply loudness matching to ALL WAV files that the evaluator will listen to:
+
+- 18 files in LISTENING/
+- 6 files in XTTS_RESEMBLANCE/
+- 12 files in STS_RESEMBLANCE/
+- all files in REFERENCE_SOURCE/
+- all files in REFERENCE_TARGET_XTTS/
+- all files in REFERENCE_TARGET_STS/
+
+Do not alter the originals.
+
+Use constant gain only.
+
+Target approximately:
+
+-23 LUFS integrated
+
+For each file:
+
+- measure original integrated LUFS
+- measure original peak dBFS
+- calculate required constant gain
+- apply that constant gain
+- verify final LUFS
+- verify peak
+
+Do NOT use:
+- compression
+- dynamic normalization
+- limiting unless absolutely required to avoid clipping
+- denoising
+- EQ
+- silence trimming
+- noise gates
+- spectral processing
+- resynthesis
+
+If reaching -23 LUFS would cause clipping, use the maximum safe constant gain that keeps
+the peak below -1 dBFS and document the resulting loudness.
+
+The purpose is ONLY to remove playback-level differences while preserving the waveform,
+timing, prosody, artifacts, and linguistic content.
+
+
+2. VERIFY THE SOURCE REFERENCES
+
+Explicitly verify that these six files contain the complete recordings and report their
+durations:
+
+S1_executive_take01.wav
+S1_executive_take02.wav
+S1_executive_take03.wav
+S2_customer_take01.wav
+S2_customer_take02.wav
+S2_customer_take03.wav
+
+Do not replace them with different takes.
+
+
+3. KEEP BLINDING IDENTICAL
+
+Do NOT reshuffle the files.
+
+P01 must remain the same underlying output as P01 in the previous corrected package.
+The same applies to X01-X06 and S01-S12.
+
+This lets the existing blinding keys remain valid.
+
+
+4. CREATE A LOUDNESS MANIFEST
+
+Create:
+
+PLAYBACK_NORMALIZATION.csv
+
+with:
+
+file
+original_LUFS
+playback_LUFS
+original_peak_dBFS
+playback_peak_dBFS
+gain_applied_dB
+duration_before
+duration_after
+
+Duration before and after must be identical.
+
+
+5. UPDATE THE INSTRUCTIONS
+
+Add:
+
+"All WAVs in this package are gain-only listening copies loudness-matched for perceptual
+inspection. This processing was NOT used for objective technical metrics and does not
+replace the original experiment outputs."
+
+The evaluator should use the same physical playback volume throughout the session and
+should not manually change volume between individual samples.
+
+
+6. FINAL PACKAGE
+
+Create:
+
+chapter7_blinded_listening_set_PLAYBACK_NORMALIZED.zip
+
+Report:
+- whether all source references were complete
+- their six durations
+- original loudness range
+- final playback loudness range
+- whether any file could not reach -23 LUFS without clipping
