@@ -1,0 +1,116 @@
+Correct the existing Chapter 7 blinded listening package.
+
+IMPORTANT:
+The current package contains all 18 correct system outputs and its randomization is
+already valid. Do NOT regenerate any system audio.
+
+The problem is only the target-speaker resemblance evaluation:
+
+- RVC and Seed-VC target the professor speaker represented by prof_ref_01.wav /
+  prof_ref_02.wav.
+- XTTS uses the speaker represented by the locked golden reference
+  audio4_chunk_080.wav, which appears to be a different speaker.
+
+Therefore the 18 outputs must NOT all be rated against the same target-speaker reference.
+
+Create:
+
+chapter7_blinded_listening_set_CORRECTED.zip
+
+
+1. KEEP THE EXISTING 18-FILE BLINDED SET
+
+Keep the exact existing P01.wav–P18.wav files and existing randomization.
+
+For the combined evaluation score ONLY:
+
+- content_intelligibility_1to5
+- scenario_delivery_1to5
+- audio_naturalness_1to5
+- short_observation
+
+Remove target-speaker resemblance from this combined sheet.
+
+Create:
+
+COMBINED_LISTENING_SHEET.csv
+
+
+2. XTTS RESEMBLANCE EVALUATION
+
+Create a separate blinded set containing only the 6 existing XTTS scenario outputs.
+
+Randomize them as:
+
+X01.wav ... X06.wav
+
+Do not regenerate them.
+
+Provide 1–2 clean GENUINE recordings of the same real speaker used for the XTTS
+golden reference/embedding (`audio4_chunk_080.wav`).
+
+IMPORTANT:
+- genuine speech only
+- not XTTS-generated
+- preferably not the exact 22.8 s golden reference itself if other genuine recordings of
+  that same speaker are available
+- if only the golden-reference recording is available, use it and document that limitation
+
+The evaluator scores only:
+
+target_speaker_resemblance_1to5
+
+Create:
+
+XTTS_RESEMBLANCE_SHEET.csv
+
+
+3. STS RESEMBLANCE EVALUATION
+
+Reuse the existing professor target references.
+
+Create a separate randomized set containing only:
+
+- 6 RVC outputs
+- 6 Seed-VC outputs
+
+Rename:
+
+S01.wav ... S12.wav
+
+The evaluator scores only:
+
+target_speaker_resemblance_1to5
+
+Create:
+
+STS_RESEMBLANCE_SHEET.csv
+
+
+4. BLINDING
+
+Create separate hidden keys for:
+
+- combined 18-file set
+- XTTS resemblance set
+- STS resemblance set
+
+Do not expose the keys in the listening instructions.
+
+Do not modify, normalize, enhance, or regenerate any WAV.
+
+
+5. FINAL CHECK
+
+Before packaging, explicitly verify:
+
+- 18 unique outputs in combined set
+- 6 XTTS outputs in XTTS resemblance set
+- 12 RVC/Seed-VC outputs in STS resemblance set
+- XTTS references belong to the actual XTTS target speaker
+- STS references belong to the actual RVC/Seed-VC target speaker
+
+Create:
+chapter7_blinded_listening_set_CORRECTED.zip
+
+Report whether the XTTS and STS target speakers were confirmed to be different.
