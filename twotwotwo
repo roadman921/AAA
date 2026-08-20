@@ -1,0 +1,514 @@
+I need you to correct and finalize the STS common-metrics evaluation for Chapter 7.
+
+You already created:
+sts_chapter7_common_metrics.zip
+
+Do NOT perform new RVC or Seed-VC generation.
+Do NOT retrain anything.
+Do NOT change original audio.
+
+This task is only:
+- transcript verification,
+- WER/CER recalculation,
+- correction of the CAMPPlus reference set,
+- speaker-similarity recalculation,
+- and evidence packaging.
+
+Create a new package:
+
+sts_chapter7_common_metrics_FINAL.zip
+
+
+==================================================
+1. VERIFY THE THREE SOURCE TRANSCRIPTS
+==================================================
+
+The three source files are:
+
+- seedvc_hist_lecturer.wav
+- seedvc_test01_lecturer.wav
+- source_mine_prepared_48k.wav
+
+The previous package used ASR-derived transcripts and therefore they are NOT yet
+valid ground truth.
+
+Your task is to establish the strongest possible transcript from the existing audio.
+
+For each recording:
+
+1. Run at least TWO independent German-capable ASR passes/models if available.
+2. Compare the transcripts word by word.
+3. Inspect/listen to the audio where the ASR systems disagree, if your environment allows direct audio review.
+4. Use project notes/original scripts/text files if they contain the intended spoken sentence.
+5. Do NOT silently guess an unclear word.
+
+Produce:
+
+01_TRANSCRIPTS/source_ground_truth_review.csv
+
+Columns:
+
+source_id
+source_wav
+asr_1_transcript
+asr_2_transcript
+project_text_if_available
+proposed_verbatim_transcript
+normalized_transcript
+confidence
+human_review_required
+uncertain_segment_timestamp
+notes
+
+IMPORTANT:
+
+If you cannot confidently determine a word or phrase, DO NOT invent it.
+
+Instead mark:
+
+human_review_required = YES
+
+and provide:
+- exact timestamp
+- competing possible transcriptions
+- short explanation
+
+If practical, export ONLY those ambiguous portions as short WAV clips into:
+
+01_TRANSCRIPTS/HUMAN_REVIEW/
+
+Also create:
+
+01_TRANSCRIPTS/HUMAN_REVIEW_REQUIRED.md
+
+This file should tell the human evaluator exactly what needs to be listened to, for example:
+
+Source: source_mine_prepared_48k.wav
+Timestamp: 00:04.2–00:06.8
+ASR A: "..."
+ASR B: "..."
+Question: Which wording is actually spoken?
+
+If no ambiguity remains after evidence review, state that no human review is required.
+
+Do not call an ASR transcript "manual ground truth".
+
+
+==================================================
+2. FIX THE TARGET-SPEAKER REFERENCE SET
+==================================================
+
+The previous CAMPPlus evaluation contains a duplicated authentic target-speaker
+recording.
+
+Specifically investigate:
+
+- prof_ref_01.wav
+- GermanLecturer_audio1.w_00137.wav
+
+The previous package reported the same SHA-256 for these.
+
+Verify this.
+
+Deduplicate the reference set by AUDIO CONTENT / SHA-256, not merely filename.
+
+Then construct a CLEAN common target-speaker reference set.
+
+Requirements:
+
+- authentic target-speaker recordings only
+- unique recordings only
+- preferably approximately 8–10 independent clean clips
+- do not include generated/converted speech
+
+Where possible, EXCLUDE audio that was directly used as:
+
+- Seed-VC prompt/reference
+- XTTS golden reference
+- exact RVC evaluation reference
+- exact duplicate of one of those files
+
+For RVC training material:
+It is acceptable if the speaker recording ultimately comes from the broader training corpus,
+but avoid the exact evaluation/reference clips where identifiable.
+
+For every retained reference record:
+
+reference_id
+filename
+original_path
+duration_s
+SHA256
+known_use_in_training
+known_use_as_seedvc_prompt
+known_use_as_xtts_reference
+known_use_as_previous_metric_reference
+included_in_centroid
+reason
+
+Create:
+
+02_SIMILARITY/target_reference_set_FINAL.csv
+
+
+==================================================
+3. REBUILD THE CAMPPLUS TARGET CENTROID
+==================================================
+
+Using the corrected unique target-speaker reference set:
+
+1. Compute CAMPPlus embeddings using ONE fixed implementation.
+2. Normalize embeddings consistently.
+3. Construct ONE common target-speaker centroid.
+
+Also calculate the authentic-speaker baseline.
+
+Prefer leave-one-out evaluation:
+
+For each authentic target clip:
+- build centroid from all OTHER authentic target clips
+- measure similarity of the excluded clip to that centroid
+
+Report:
+
+- n unique target recordings
+- mean genuine-target similarity
+- standard deviation
+- minimum
+- maximum
+
+This gives context for interpreting converted-output scores.
+
+Do NOT derive a human-recognition threshold from these values.
+
+
+==================================================
+4. SOURCE-TARGET BASELINE
+==================================================
+
+Using the same CAMPPlus implementation and same final target centroid, calculate
+similarity for the ORIGINAL source-speaker recordings:
+
+- seedvc_hist_lecturer.wav
+- seedvc_test01_lecturer.wav
+- source_mine_prepared_48k.wav
+
+These are essential because the source speaker may already have substantial embedding
+similarity to the target speaker.
+
+Record:
+
+source_id
+source_wav
+similarity_to_target_centroid
+
+
+==================================================
+5. RECOMPUTE COMMON RVC / SEED-VC SIMILARITY
+==================================================
+
+Re-evaluate the existing RVC and Seed-VC outputs from the previous common-metrics
+evaluation.
+
+Use:
+- exact same CAMPPlus model
+- exact same preprocessing
+- exact same target centroid
+
+For every converted output record:
+
+source_id
+system
+model_or_checkpoint
+configuration
+output_wav
+similarity_to_target_centroid
+source_similarity_to_target_centroid
+delta_similarity_vs_source
+similarity_to_source
+
+Where:
+
+delta_similarity_vs_source =
+converted_output_similarity_to_target
+-
+original_source_similarity_to_target
+
+This delta is important.
+
+It tells us how far the conversion moved the embedding toward or away from the
+target speaker relative to the original source.
+
+Create:
+
+02_SIMILARITY/common_speaker_similarity_FINAL.csv
+
+
+==================================================
+6. CORRECT THE SEED-VC FILE-PROVENANCE ISSUE
+==================================================
+
+The previous analysis found that two supposed historical Seed-VC baseline files may
+actually be byte-identical copies of their source inputs.
+
+Specifically verify this with:
+- SHA-256
+- duration
+- PCM/audio content if necessary
+
+Do not treat a file as a converted Seed-VC result if it is actually an unchanged copy
+of the source input.
+
+Document this explicitly.
+
+Create:
+
+03_PROVENANCE/seedvc_output_provenance.md
+
+For each questionable historical file say:
+
+- source file
+- supposed output file
+- SHA-256 source
+- SHA-256 output
+- byte-identical YES/NO
+- valid conversion evidence YES/NO
+
+Any invalid historical Seed-VC similarity result must be excluded from the final
+Seed-VC evaluation.
+
+
+==================================================
+7. RECALCULATE WER / CER
+==================================================
+
+Only once the transcripts are sufficiently verified, recalculate the content metrics.
+
+Use the SAME ASR system and settings for all evaluated files.
+
+For each source recording first calculate the ASR baseline:
+
+manual/verified transcript
+vs.
+ASR(original source)
+
+Then evaluate each converted output.
+
+At minimum retain the same RVC and Seed-VC files evaluated in the previous package.
+
+For every output report:
+
+source_id
+system
+model
+configuration
+output_wav
+verified_reference_transcript
+ASR_transcript
+WER
+CER
+substitutions
+deletions
+insertions
+reference_word_count
+
+Also identify the actual affected words where feasible.
+
+Create:
+
+04_CONTENT/content_metrics_FINAL.csv
+04_CONTENT/content_analysis_FINAL.md
+
+
+==================================================
+8. ACCOUNT FOR ASR BASELINE ERRORS
+==================================================
+
+Do not interpret every output WER difference as a conversion failure automatically.
+
+For each source utterance compare:
+
+WER(original source)
+versus
+WER(converted output)
+
+Also calculate:
+
+delta_WER_vs_source
+
+and, where meaningful:
+
+delta_CER_vs_source
+
+This helps distinguish:
+
+- errors already produced by ASR on the original human speech
+from
+- additional content degradation after voice conversion.
+
+Do not mathematically "correct" WER by subtraction and call it corrected WER.
+Keep raw WER as the primary metric.
+
+The delta is contextual information only.
+
+
+==================================================
+9. DETERMINE WHETHER THE MAIN STS FINDINGS SURVIVE
+==================================================
+
+Create:
+
+00_REPORT/FINAL_STS_METRICS_REPORT.md
+
+Answer these questions directly.
+
+A. CONTENT PRESERVATION
+
+Does the retained evidence support the statement that RVC preserved linguistic
+content more reliably than Seed-VC for the evaluated outputs?
+
+Give exact numbers.
+
+If the answer differs by source utterance, say so.
+
+B. TARGET-SPEAKER EMBEDDING SIMILARITY
+
+Using the corrected common target centroid:
+
+- What similarity did the original source speaker already have?
+- What similarity did GermanLecturerRVC achieve?
+- What similarity did RVC_Audit8 achieve?
+- What similarity did valid Seed-VC outputs achieve?
+
+C. RELATIVE MOVEMENT TOWARD TARGET
+
+Which systems/configurations produced the largest:
+
+delta_similarity_vs_source?
+
+This should be discussed separately from absolute similarity.
+
+D. SMALLER VS LARGER RVC
+
+Does RVC_Audit8 actually produce stronger target-speaker embedding similarity than
+GermanLecturerRVC under the corrected common protocol?
+
+E. SEED-VC CLAIM
+
+Does the evidence support:
+
+"Seed-VC produced better speaker resemblance than RVC but worse content stability"?
+
+Do NOT try to preserve this claim.
+
+If only the content-instability part is supported, state exactly that.
+
+F. HUMAN PERCEPTION
+
+Explicitly state:
+
+CAMPPlus similarity is NOT evidence that a human listener would identify the output
+as the target speaker.
+
+Do not translate embedding scores into perceptual convincingness.
+
+
+==================================================
+10. HUMAN LISTENING REVIEW — ONLY IF NEEDED
+==================================================
+
+Do NOT ask for a broad subjective listening experiment yet.
+
+Only request human review when it is necessary to resolve specific factual ambiguity.
+
+For example:
+
+- unclear source transcript
+- whether a word is actually missing
+- whether a phrase is repeated
+- whether an output is truncated
+
+If human review is needed, create ONE file:
+
+05_HUMAN_REVIEW/HUMAN_REVIEW_TASKS.md
+
+Use this format:
+
+TASK 1
+File:
+Timestamp:
+Question:
+Option/evidence A:
+Option/evidence B:
+What the evaluator should report:
+
+If useful, copy only the relevant short WAV excerpts into the same folder.
+
+Do not ask the evaluator:
+"Does this sound good?"
+or
+"Is this convincing?"
+
+unless objective evidence cannot resolve an important thesis claim.
+
+I will personally perform any necessary listening evaluation later.
+
+
+==================================================
+11. REPRODUCIBILITY
+==================================================
+
+Preserve:
+
+- transcript comparison scripts
+- WER/CER scripts
+- normalization rules
+- CAMPPlus script
+- target-centroid calculation
+- target reference manifest
+- checksum script
+- package/environment versions
+
+Create:
+
+06_REPRODUCIBILITY/README.md
+
+
+==================================================
+12. FINAL PACKAGE
+==================================================
+
+Create:
+
+sts_chapter7_common_metrics_FINAL.zip
+
+The report must clearly distinguish:
+
+[MEASURED]
+[DERIVED]
+[HUMAN-VERIFIED]
+[QUALITATIVE]
+[UNRESOLVED]
+
+Do not hide corrections to the previous package.
+
+Include a section:
+
+"Corrections to previous STS evidence"
+
+specifically covering:
+- transcript corrections
+- duplicate target-reference removal
+- Seed-VC source/output duplicate issue
+- recalculated CAMPPlus values
+- recalculated WER/CER values
+- any previous claims that are no longer supported
+
+Finally report:
+
+1. ZIP path
+2. ZIP size
+3. number of unique target-speaker clips in the final centroid
+4. whether human transcript review is still required
+5. exact files/timestamps requiring my personal listening, if any
+6. the three strongest quantitative findings after correction
