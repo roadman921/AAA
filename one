@@ -1,0 +1,391 @@
+You have access to my Bachelor-thesis TTS/XTTS project folder and the associated project knowledge.
+
+I am preparing Chapter 7, an exploratory technical validation of voice cloning for a cybersecurity Bachelor thesis. I need you to build a complete evidence package from the EXISTING XTTS/TTS work.
+
+IMPORTANT:
+- Do NOT invent, infer, or approximate missing values.
+- Do NOT silently rerun experiments or generate new audio.
+- First use only existing files, logs, scripts, WAVs, configs, notes, and metadata.
+- If a value can be calculated deterministically from existing evidence (for example WAV duration, RTF, mean, standard deviation), calculate it and preserve the script used for the calculation.
+- Clearly distinguish:
+  1. directly recorded/measured data,
+  2. values derived from existing files,
+  3. qualitative observations from existing notes,
+  4. information that is missing.
+- If two files or notes contradict each other, report the conflict instead of choosing one.
+- Focus ONLY on TTS/XTTS. Do not include RVC, Seed-VC, or other speech-to-speech systems.
+- The evaluation is German only. Do not assume that English was tested.
+- Do not delete, rename, overwrite, or modify original project files.
+
+Create a ZIP called:
+
+tts_chapter7_evidence.zip
+
+The ZIP should contain a clean evidence package with the following structure if possible:
+
+01_REPORT/
+02_ENVIRONMENT/
+03_REFERENCE_AUDIO/
+04_BENCHMARK_TEXTS/
+05_BENCHMARK_OUTPUTS/
+06_TIMING_DATA/
+07_CONFIG_AND_CODE/
+08_ANOMALIES_AND_EXTRA_RUNS/
+09_DERIVED_METRICS/
+10_FILE_INVENTORY/
+
+--------------------------------------------------
+1. MASTER REPORT
+--------------------------------------------------
+
+Create:
+
+01_REPORT/TTS_EVIDENCE_REPORT.md
+
+The report should give precise answers to the following.
+
+A. SYSTEM AND IMPLEMENTATION
+
+Identify exactly:
+
+- TTS framework/library and installed version
+- exact XTTS model identifier
+- model version if available
+- Git repository and Git commit/hash if available
+- Python version
+- PyTorch version
+- CUDA version
+- relevant GPU/runtime versions
+- operating system
+- hardware:
+  - CPU
+  - GPU
+  - GPU VRAM
+  - RAM
+- whether execution was local
+- whether inference used GPU
+- important dependencies that materially affected generation
+
+Obtain these from existing environment files, logs, scripts, manifests, package lists, or project knowledge.
+
+Clearly label anything not directly recoverable.
+
+B. REFERENCE SPEAKER MATERIAL
+
+Document:
+
+- total amount of source/available target-speaker audio
+- exact reference audio file actually used for the final XTTS evaluation
+- exact duration of that reference file
+- sample rate
+- channels
+- bit depth/encoding if determinable
+- whether it was edited, trimmed, normalized, denoised, resampled, etc.
+- how/why this particular reference was selected, but only if existing notes support the reason
+- language/accent characteristics documented in the project
+- whether the same fixed reference was used for all benchmark generations
+- whether any different reference files were used during exploratory generations
+
+Copy the actual final reference WAV into:
+03_REFERENCE_AUDIO/
+
+If consent/privacy notes exist, include only non-sensitive documentation. Do not expose unrelated private recordings.
+
+C. EXACT BENCHMARK TEXTS
+
+Recover the exact German benchmark sentences used for the final repeatable XTTS timing/evaluation runs.
+
+For each sentence record:
+
+- exact text
+- category used in the project, e.g. short / medium / long
+- word count
+- character count
+- any preprocessing or normalization applied before generation
+- whether numbers, abbreviations, dates, symbols, etc. were normalized
+
+Create:
+
+04_BENCHMARK_TEXTS/benchmark_texts.csv
+
+with at least:
+
+sentence_id,text,category,word_count,character_count,input_to_model
+
+Also include any normalization/preprocessing script responsible for changing input text.
+
+D. FINAL BENCHMARK RUNS
+
+Identify the final benchmark generations.
+
+My recollection is that there should be approximately:
+- 3 retained runs for the short sentence
+- 3 retained runs for the medium sentence
+- 3 retained runs for the long sentence
+
+Do not assume this is correct. Verify it from the files.
+
+For EVERY retained benchmark generation collect:
+
+- sentence ID
+- run number
+- WAV filename
+- generation timestamp if available
+- recorded generation time
+- output audio duration
+- resulting RTF = generation_time / output_duration
+- sample rate
+- any relevant XTTS inference parameters
+- whether this run was part of the final benchmark set or an anomaly/retry
+
+Copy the retained WAVs into:
+05_BENCHMARK_OUTPUTS/
+
+Create:
+
+06_TIMING_DATA/final_benchmark_runs.csv
+
+with one row per run.
+
+E. TIMING METHODOLOGY
+
+This is particularly important.
+
+Determine exactly what the recorded XTTS timing measured.
+
+Answer:
+
+- Did timing begin before or after model loading?
+- Did timing include speaker embedding/reference processing?
+- Did timing include text preprocessing?
+- Did timing include inference only?
+- Did timing stop when the WAV was completely generated/written?
+- Did it include playback?
+- Was a warmup generation performed?
+- What was cold model-loading time?
+- What were observed warm/subsequent loading times, if separately measured?
+- Was the model kept loaded between benchmark generations?
+- Were CUDA synchronization calls used around timing, if determinable?
+- What timer/function was used?
+- Were timings manually recorded or automatically logged?
+- Was the same procedure used for all three sentence lengths?
+
+Quote or point to the script lines responsible for timing where possible.
+
+Copy the relevant scripts/logs into:
+06_TIMING_DATA/
+and
+07_CONFIG_AND_CODE/
+
+F. DERIVED QUANTITATIVE RESULTS
+
+Using ONLY the verified final benchmark runs, calculate for each sentence group:
+
+- n
+- mean generation time
+- minimum generation time
+- maximum generation time
+- standard deviation of generation time, if n makes this meaningful
+- mean output duration
+- mean RTF
+- min/max RTF
+
+Also give an overall benchmark summary.
+
+Preserve the calculation script as:
+
+09_DERIVED_METRICS/calculate_tts_metrics.py
+
+and output:
+
+09_DERIVED_METRICS/tts_metrics_summary.csv
+
+Do not hide anomalous runs by including/excluding them silently.
+
+G. ANOMALIES / RETRIES
+
+Find all evidence concerning abnormal XTTS generations, especially:
+
+- looping/repetition
+- unexpectedly long output
+- incomplete output
+- duration anomalies
+- pronunciation/text-normalization problems
+- regeneration/retry events
+- crashes or failed generations
+
+For each identifiable anomaly record:
+
+- input
+- output filename if retained
+- observed problem
+- whether the run was excluded from the final benchmark
+- reason for exclusion
+- whether a replacement generation was made
+
+Create:
+
+08_ANOMALIES_AND_EXTRA_RUNS/anomalies.csv
+
+Do NOT treat retries as successful independent benchmark repetitions.
+
+Copy representative anomalous WAVs if they exist and are clearly identifiable.
+
+H. TOTAL GENERATION COUNT
+
+Determine as accurately as possible:
+
+- total number of completed XTTS generations in the project
+- number used for the final quantitative benchmark
+- number that were exploratory
+- number of identifiable failed/anomalous/retry generations
+
+I previously estimated around 120 completed generations, possibly in the range 100–150.
+
+Do NOT use that estimate as evidence.
+
+Count actual files/log entries where possible.
+
+If an exact count cannot be established, explain why and provide the strongest defensible lower/upper bound supported by the files.
+
+I. QUALITATIVE EVALUATION EVIDENCE
+
+Recover EXISTING notes/evidence concerning:
+
+- neutral target-speaker resemblance
+- intelligibility
+- pronunciation
+- naturalness
+- Austrian/German accent characteristics if documented
+- emotional/prosodic attempts
+- forceful/aggressive speech
+- irritated/impatient speech
+- desperation
+- overwhelmed delivery
+- near-tearful delivery
+- looping
+- instability
+
+IMPORTANT:
+Do not turn subjective notes into quantitative scores.
+
+For every qualitative conclusion, state whether it comes from:
+- written notes,
+- filenames/labels,
+- listening/evaluation documentation,
+- or another existing record.
+
+I am particularly interested in whether the existing evidence supports the conclusion that neutral target-speaker speech was more reliable than strongly emotional/prosodic speech.
+
+J. RELATION TO THE TWO THESIS SCENARIOS
+
+Do NOT write the thesis discussion.
+
+Instead create a short factual section identifying which existing XTTS tests are technically relevant to:
+
+Scenario 1:
+- recognizable target identity
+- impatient/forceful executive delivery
+- relatively short utterances
+- time-sensitive interaction
+
+Scenario 2:
+- recognizable target identity
+- overwhelmed/desperate/near-tearful delivery
+- emotionally demanding speech
+
+For each, state only what was actually tested and what was not tested.
+
+Do not claim that any generated sample would successfully deceive a human.
+
+K. REPRODUCIBILITY
+
+Collect the files necessary to understand/reproduce the XTTS evaluation with different consented speech material:
+
+- inference scripts
+- preprocessing/text-normalization scripts
+- timing scripts
+- configuration
+- dependency/version information
+- model identifier
+- benchmark texts
+- command lines if available
+- relevant manifests/logs
+
+Do not include large model weights unless they contain information unavailable elsewhere.
+
+L. FILE INVENTORY AND PROVENANCE
+
+Create:
+
+10_FILE_INVENTORY/file_inventory.csv
+
+For every file placed in the ZIP record:
+
+- ZIP path
+- original project path
+- filename
+- file type
+- size
+- purpose
+- whether original or newly derived
+- SHA-256 checksum if practical
+
+Also create:
+
+10_FILE_INVENTORY/MISSING_INFORMATION.md
+
+List every requested item that could not be recovered.
+
+--------------------------------------------------
+2. IMPORTANT FINAL SUMMARY
+--------------------------------------------------
+
+At the TOP of TTS_EVIDENCE_REPORT.md, include a compact section called:
+
+"Verified facts suitable for Chapter 7"
+
+Only include facts directly supported by the gathered evidence.
+
+Then include:
+
+"Derived results suitable for Chapter 7"
+
+Then:
+
+"Qualitative observations only"
+
+Then:
+
+"Claims that the available evidence does NOT support"
+
+Examples of claims that must NOT be made without evidence:
+- human deception success
+- automatic speaker similarity if it was never measured
+- superiority to other TTS systems
+- general XTTS performance across speakers/languages
+- real-time conversational capability merely because RTF < 1
+- emotional convincingness without a listener study
+
+--------------------------------------------------
+3. DO NOT RUN NEW EXPERIMENTS
+--------------------------------------------------
+
+Do not generate new samples or rerun benchmarks at this stage.
+
+If you identify measurements/tests that would materially strengthen Chapter 7 but cannot be recovered from existing evidence, put them in a final section:
+
+"Recommended additional tests"
+
+For each recommendation state:
+- what is currently missing,
+- why it matters scientifically,
+- exact minimal test required,
+- whether it can be performed using the already existing benchmark WAVs or requires new generation.
+
+Do NOT execute those tests.
+
+Finally, create the ZIP and tell me:
+1. its full path,
+2. its size,
+3. a short list of any major missing evidence.
