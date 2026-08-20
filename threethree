@@ -1,0 +1,204 @@
+The **TTS result is not affected by these six quiet recordings**.
+
+XTTS is text-to-speech. In the scenario demo it received the two written sentences and used the already fixed target-speaker reference/embedding. The six files in `scenario_audio` were **not input to XTTS**. So:
+
+**TTS: leave everything exactly as it is. Do not rerun it.**
+
+The quiet recordings matter only for **RVC and Seed-VC**, because those systems directly convert your recorded speech.
+
+For STS, I would not manually edit the recordings yourself. Let the agent make controlled copies. The procedure should be:
+
+1. Keep all six originals untouched.
+2. Duplicate them into something like `scenario_audio_normalized`.
+3. Measure integrated LUFS for every original.
+4. Apply **gain only** so each copy is approximately **−28 LUFS**.
+5. Keep the original sample rate, bit depth, channels, timing, and waveform content.
+6. Do **not** use normalization/compression/limiting, denoising, EQ, silence trimming, voice enhancement, or any other processing beyond constant gain.
+7. Record the exact gain applied to every file and verify that no clipping occurred.
+8. Run the same already-frozen RVC and Seed-VC configurations on these normalized copies.
+9. Compare normalized vs. original using the same WER/CER, CAMPPlus and failure analysis.
+
+Because your current peaks are low enough, reaching about −28 LUFS should likely be possible with constant gain without clipping. Still, the agent should verify peak levels after processing.
+
+Send the STS agent this:
+
+```text
+Perform one final INPUT-LEVEL SENSITIVITY CHECK on the six existing scenario recordings.
+
+IMPORTANT:
+Do not modify the originals.
+Do not retrain anything.
+Do not change RVC or Seed-VC configuration.
+Do not tune anything after seeing results.
+
+Original folder:
+
+C:\Users\pcai\Desktop\scenario_audio
+
+Create:
+
+C:\Users\pcai\Desktop\scenario_audio_normalized
+
+==================================================
+1. CREATE GAIN-ONLY COPIES
+==================================================
+
+For each of the six original WAV files:
+
+1. Measure:
+   - integrated loudness in LUFS
+   - RMS level if available
+   - peak dBFS
+   - duration
+   - sample rate
+   - channels
+
+2. Create a duplicate normalized to approximately:
+
+   -28 LUFS integrated
+
+IMPORTANT:
+Use CONSTANT GAIN ONLY.
+
+Do NOT use:
+- compression
+- dynamic normalization
+- limiting unless clipping would otherwise occur
+- denoising
+- EQ
+- silence trimming
+- voice enhancement
+- noise gate
+- resynthesis
+- any other processing
+
+The purpose is to change only input amplitude.
+
+Preserve:
+- exact spoken content
+- timing
+- sample rate
+- channels
+- encoding where practical
+
+If reaching -28 LUFS would cause clipping, do not clip the signal.
+Use the maximum safe constant gain and document the resulting LUFS.
+
+Record for every file:
+
+filename
+original_LUFS
+normalized_LUFS
+original_peak_dBFS
+normalized_peak_dBFS
+gain_applied_dB
+duration_before
+duration_after
+SHA256_original
+SHA256_normalized
+
+Create:
+
+input_level_normalization.csv
+
+==================================================
+2. RERUN THE EXACT FROZEN STS CONFIGURATIONS
+==================================================
+
+Run the already-fixed final configurations on all six normalized copies:
+
+RVC:
+Use exactly the same RVC_Audit8 configuration used in
+sts_scenario_demo_FINAL.zip.
+
+Seed-VC:
+Use exactly the same fixed Seed-VC configuration used in
+sts_scenario_demo_FINAL.zip.
+
+Do not change:
+- checkpoint
+- pitch
+- F0 method
+- index rate
+- target reference
+- Seed-VC parameters
+- preprocessing beyond the amplitude normalization described above
+
+Generate exactly:
+
+6 normalized-input RVC outputs
+6 normalized-input Seed-VC outputs
+
+No retries for subjective quality improvement.
+
+==================================================
+3. USE THE SAME METRICS
+==================================================
+
+Evaluate the normalized-input outputs with the EXACT same protocol already used in
+sts_scenario_demo_FINAL.zip:
+
+- faster-whisper large-v3-turbo
+- same WER/CER procedure
+- same CAMPPlus implementation
+- same target-speaker centroid
+- same timing methodology
+- same failure classification
+
+Do not create a new evaluation protocol.
+
+==================================================
+4. DIRECT PAIRED COMPARISON
+==================================================
+
+For every source recording and system compare:
+
+ORIGINAL INPUT RESULT
+versus
+NORMALIZED INPUT RESULT
+
+Report:
+
+- WER before / after
+- CER before / after
+- CAMPPlus target similarity before / after
+- delta similarity vs source before / after
+- RTF before / after
+- failure status before / after
+
+Create:
+
+input_level_sensitivity_results.csv
+
+==================================================
+5. FINAL QUESTION
+==================================================
+
+Create:
+
+INPUT_LEVEL_SENSITIVITY_REPORT.md
+
+Answer only:
+
+1. Were the original scenario recordings substantially quieter than the normalized copies?
+2. Did gain-only normalization materially change RVC content preservation?
+3. Did it materially change Seed-VC content preservation?
+4. Did CAMPPlus target similarity materially change?
+5. Did any objective failure disappear or newly appear?
+6. Do the results suggest that low source amplitude was an important boundary condition
+   in the original scenario demonstration?
+
+Do not overinterpret small numerical differences.
+
+This is a sensitivity/control check, not a new experiment.
+
+Do not claim causality beyond the paired observations.
+
+Package everything as:
+
+sts_scenario_input_level_check.zip
+```
+
+This is worth doing because it answers one very specific methodological question: **were the poor STS results actually properties of the conversion systems/configurations, or partly an artifact of unusually quiet source recordings?**
+
+After this check, I would stop testing entirely.
