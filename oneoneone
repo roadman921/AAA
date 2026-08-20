@@ -1,0 +1,370 @@
+You are the TTS/XTTS agent for my Bachelor thesis project.
+
+I have now recorded the six scenario source utterances used for the final scenario-linked technical demonstration.
+
+They are located at:
+
+C:\Users\pcai\Desktop\scenario_audio
+
+The folder contains:
+
+S1_executive_take01.wav
+S1_executive_take02.wav
+S1_executive_take03.wav
+
+S2_customer_take01.wav
+S2_customer_take02.wav
+S2_customer_take03.wav
+
+IMPORTANT:
+For XTTS, these recordings are NOT source input.
+XTTS is text-to-speech.
+
+The recordings exist so that the STS systems can process the same scenario content.
+For XTTS, generate three independent outputs for each of the two exact texts below.
+
+This is the FINAL scenario-linked technical demonstration for Chapter 7.
+
+Do not expand the experiment.
+Do not tune parameters after seeing results.
+Do not cherry-pick successful generations.
+Do not remove failures.
+
+Create:
+
+tts_scenario_demo_FINAL.zip
+
+
+==================================================
+1. FIXED SCENARIO TEXTS
+==================================================
+
+Scenario 1 — Executive:
+
+Ich bin gerade zwischen zwei Terminen und die Zahlung muss heute noch bearbeitet werden. Die schriftliche Bestätigung reiche ich direkt danach nach.
+
+Scenario 2 — Customer:
+
+Ich stehe gerade in der Apotheke und die Bestätigung in der App funktioniert nicht. Bitte helfen Sie mir mit der gestoppten Zahlung.
+
+Use these exact texts.
+
+Apply only the same text-normalization stage already established in the final XTTS evaluation.
+
+Preserve:
+- original text
+- normalized text actually passed to XTTS
+
+
+==================================================
+2. FIXED XTTS CONFIGURATION
+==================================================
+
+Use the already established FINAL XTTS configuration from the previous evidence packages.
+
+This must include:
+
+- XTTS-v2
+- same model version
+- same active golden speaker embedding/reference
+- same language = German
+- same final inference parameters
+- same preprocessing
+- same hardware/environment
+
+Do NOT:
+- select a new reference clip
+- change temperature
+- change repetition penalty
+- change speed
+- change sampling parameters
+- tune parameters separately for Scenario 1 and Scenario 2
+- optimize after listening to the results
+
+Before running anything, record the complete configuration in:
+
+01_CONFIG/final_xtts_scenario_config.md
+
+
+==================================================
+3. GENERATION DESIGN
+==================================================
+
+Generate exactly:
+
+Scenario 1:
+- S1_XTTS_run01.wav
+- S1_XTTS_run02.wav
+- S1_XTTS_run03.wav
+
+Scenario 2:
+- S2_XTTS_run01.wav
+- S2_XTTS_run02.wav
+- S2_XTTS_run03.wav
+
+Total planned outputs = 6.
+
+Each run must be an independent generation under the same fixed configuration.
+
+IMPORTANT:
+
+If a generation produces:
+- looping
+- repetition
+- truncation
+- abnormal duration
+- malformed output
+- crash
+- other instability
+
+KEEP that result.
+
+Do not silently regenerate it.
+
+If the software itself automatically performs a retry because of an existing duration guard,
+record:
+- initial result
+- retry event
+- final result
+- reason
+
+Do not create extra manually selected replacement outputs.
+
+
+==================================================
+4. TIMING
+==================================================
+
+Use the same timing methodology already established in the final XTTS benchmark.
+
+For every generation record:
+
+- scenario
+- run
+- generation time
+- output duration
+- RTF = generation_time / output_duration
+- whether model was already loaded
+- anomaly status
+
+Timing should represent the same inference interval used previously.
+
+Do not include:
+- human text entry time
+- playback
+- decision-making
+- conversational response formulation
+
+Do not claim that RTF < 1 equals real-time conversational latency.
+
+
+==================================================
+5. CONTENT PRESERVATION — WER/CER
+==================================================
+
+Use the same finalized ASR protocol as the STS evaluation:
+
+faster-whisper large-v3-turbo
+German
+fixed decoding settings
+beam_size = 5
+temperature = 0
+
+Do not tune ASR per output.
+
+For every generated WAV calculate:
+
+- ASR transcript
+- WER
+- CER
+- substitutions
+- deletions
+- insertions
+
+Use the normalized text actually supplied to XTTS as the ground truth.
+
+Create:
+
+02_METRICS/xtts_scenario_content.csv
+
+
+==================================================
+6. SPEAKER-EMBEDDING SIMILARITY
+==================================================
+
+Use the SAME finalized CAMPPlus methodology already established in the previous XTTS metrics.
+
+Do not invent a new speaker-similarity metric.
+
+For each of the six scenario outputs calculate:
+
+- similarity to target-speaker centroid
+- duration
+
+If the exact common target reference set used in the finalized STS evaluation is also available
+to this agent, use that SAME reference set and SAME CAMPPlus implementation.
+
+If it is NOT available, use the already finalized XTTS target centroid and clearly state that
+absolute CAMPPlus values must not be directly compared numerically with the STS results.
+
+Do not invent a recognition threshold.
+
+CAMPPlus similarity is NOT evidence that a human listener identifies the voice as the target.
+
+Create:
+
+02_METRICS/xtts_scenario_similarity.csv
+
+
+==================================================
+7. FAILURE / STABILITY ANALYSIS
+==================================================
+
+For every output classify only objectively observable failures:
+
+- none
+- repetition/looping
+- truncation
+- missing linguistic content
+- added linguistic content
+- abnormal duration
+- generation failure/crash
+
+Use:
+- logs
+- WER/CER
+- duration
+- ASR transcript
+
+Do NOT make subjective claims such as:
+"convincing"
+"realistic"
+"good CEO voice"
+"emotionally convincing"
+
+Create:
+
+03_FAILURES/xtts_scenario_failures.csv
+
+
+==================================================
+8. DO NOT EVALUATE EMOTIONAL SUCCESS
+==================================================
+
+The two texts correspond to the executive and customer scenarios, but XTTS is not being
+asked to prove that it successfully reproduces authority or distress.
+
+Do not claim:
+- the executive output sounds authoritative
+- the customer output sounds distressed
+- either output would deceive a human
+
+Those questions, if needed, will be handled separately through a limited human listening
+assessment.
+
+For this agent, evaluate only:
+- content preservation
+- target-speaker embedding similarity
+- timing
+- stability
+
+
+==================================================
+9. COMBINED TABLE
+==================================================
+
+Create:
+
+04_RESULTS/xtts_scenario_demo.csv
+
+Columns:
+
+scenario
+run
+input_text
+normalized_text
+generation_time_s
+output_duration_s
+RTF
+WER
+CER
+substitutions
+deletions
+insertions
+campplus_similarity
+failure_status
+output_filename
+
+
+==================================================
+10. FINAL REPORT
+==================================================
+
+Create:
+
+00_REPORT/XTTS_SCENARIO_DEMO_REPORT.md
+
+Keep the report concise and scientific.
+
+Answer:
+
+1. Did all six planned generations complete?
+2. How reliably was the exact scenario text preserved?
+3. What CAMPPlus similarity was observed?
+4. How stable were results across the three runs of each scenario?
+5. What generation times and RTFs were observed?
+6. Were any loops, repetitions, truncations, or abnormal durations observed?
+7. Does the evidence demonstrate human deception success?
+   Answer NO unless an actual human experiment exists.
+8. Does the evidence demonstrate successful emotional/authority performance?
+   Answer NO; that requires separate perceptual evaluation.
+9. What narrow technical conclusion can legitimately be drawn?
+
+The intended type of conclusion is:
+
+"The fixed XTTS configuration was tested on two scenario-relevant German utterances for
+content preservation, target-speaker embedding similarity, processing time, and generation
+stability."
+
+Do not write the thesis chapter itself.
+
+
+==================================================
+11. REPRODUCIBILITY
+==================================================
+
+Include:
+
+- exact XTTS configuration
+- exact texts
+- normalization result
+- inference script
+- timing script
+- WER/CER script
+- CAMPPlus script
+- package/version information
+- six generated WAVs
+- logs
+- combined CSV
+
+Do not include unrelated private source recordings or model weights.
+
+
+==================================================
+12. FINAL PACKAGE
+==================================================
+
+Create:
+
+tts_scenario_demo_FINAL.zip
+
+Report:
+
+1. full path
+2. ZIP size
+3. whether all 6 outputs completed
+4. mean/range WER for each scenario
+5. mean/range CAMPPlus for each scenario
+6. mean/range RTF for each scenario
+7. number and type of failures
+8. anything requiring human listening
