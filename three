@@ -1,0 +1,210 @@
+Good. Then I would make this the **final additional technical demonstration** and stop expanding Chapter 7 afterward.
+
+The design should be small but deliberately controlled. The key improvement is that both scenario utterances have **22 words**, use the same target speaker, and are evaluated with the same objective metrics. That gives the demonstration a clear connection to Chapters 5–6 without pretending it is a population experiment.
+
+WER/CER plus speaker-embedding similarity is also consistent with established voice-conversion evaluation practice; Seed-VC itself evaluates intelligibility/content preservation with WER/CER and speaker identity with embedding cosine similarity. ([GitHub][1])
+
+## Step 1 — record these exact two sentences
+
+### Executive scenario
+
+```text
+Ich bin gerade zwischen zwei Terminen und die Zahlung muss heute noch bearbeitet werden. Die schriftliche Bestätigung reiche ich direkt danach nach.
+```
+
+Delivery:
+
+* firm and controlled;
+* clearly impatient, but **not shouting**;
+* slightly faster than normal conversation;
+* first sentence should sound like an instruction, not a request;
+* second sentence should sound confident and matter-of-fact;
+* do not artificially exaggerate anger.
+
+This gives us the **authority + urgency** condition from Scenario 1 without turning it into a long fraud script.
+
+### Customer scenario
+
+```text
+Ich stehe gerade in der Apotheke und die Bestätigung in der App funktioniert nicht. Bitte helfen Sie mir mit der gestoppten Zahlung.
+```
+
+Delivery:
+
+* clearly distressed and overwhelmed;
+* somewhat breathy/strained is fine;
+* urgent, but still fully intelligible;
+* second sentence should sound like a genuine request for help;
+* near-tearful is fine, but **do not actually cry or deliberately distort the words**.
+
+This connects directly to Scenario 2 while keeping the technical stimulus short and controlled.
+
+## Record three valid takes of each
+
+So you will produce exactly **six source WAVs**:
+
+```text
+S1_executive_take01.wav
+S1_executive_take02.wav
+S1_executive_take03.wav
+
+S2_customer_take01.wav
+S2_customer_take02.wav
+S2_customer_take03.wav
+```
+
+Do **not choose your favorite take**. All three valid takes will be used. That avoids cherry-picking.
+
+A “valid” take only means:
+
+* exact sentence spoken;
+* no stumble or missing word;
+* no external interruption;
+* recording technically usable.
+
+If you make an obvious speaking mistake, discard that take and rerecord it. Don't deliberately rerecord because you think another take “sounds more convincing.”
+
+## Recording conditions
+
+Keep these constant for all six:
+
+* same microphone/device;
+* same room;
+* same microphone distance;
+* same gain;
+* mono WAV;
+* preferably 48 kHz PCM;
+* no manual EQ, compression, denoising, reverb, or post-processing;
+* disable automatic noise suppression/voice enhancement if your recording setup allows it.
+
+Also **do not add travel noise, pharmacy noise, crying children, etc.**
+
+That is deliberate. Chapter 6 can contain contextual surroundings, but Chapter 7 should isolate the speech-generation systems rather than adding another uncontrolled variable.
+
+Write down:
+
+```text
+Microphone/device:
+Recording software:
+Sample rate:
+Bit depth:
+Approximate microphone distance:
+Room/environment:
+Any automatic processing enabled:
+```
+
+### Why three takes?
+
+Not because `n=3` suddenly creates a formal experiment. It doesn't.
+
+It gives us enough repeated material to show whether a result is **consistent across slightly different realizations of the same scenario utterance** rather than depending on one unusually good or bad recording.
+
+We will report descriptive results only—no significance tests or population claims.
+
+---
+
+## What happens to the six recordings
+
+Once you have them, the technical demonstration will be locked to:
+
+**XTTS-v2**
+
+* same two texts;
+* 3 generations per text;
+* existing final XTTS configuration/reference;
+* no parameter tuning after seeing the results.
+
+**RVC**
+
+* all six recordings;
+* one preselected final model/configuration only;
+* preferably the existing RVC_Audit8 configuration already established as your final inference setup;
+* no tuning per scenario.
+
+**Seed-VC**
+
+* exactly the same six recordings;
+* one preselected baseline/final configuration;
+* same target reference for every conversion;
+* no tuning per scenario.
+
+That gives:
+
+* 6 XTTS outputs;
+* 6 RVC outputs;
+* 6 Seed-VC outputs;
+
+= **18 scenario-linked outputs total**.
+
+That's enough.
+
+## What we measure
+
+For every output:
+
+**Content preservation**
+
+* WER
+* CER
+* substitutions/deletions/insertions
+
+**Speaker identity representation**
+
+* CAMPPlus similarity to the existing common target-speaker centroid
+
+**Processing**
+
+* processing/generation time
+* output duration
+* RTF
+
+**Failure**
+
+* looping;
+* truncation;
+* missing/repeated content;
+* generation/conversion failure.
+
+For STS we also calculate WER/CER on your **original six human recordings**, because that gives the ASR baseline. We then know whether a higher WER after conversion actually represents degradation rather than Whisper misunderstanding your original speech.
+
+For speaker similarity we also retain the original-source → target score, so we can calculate:
+
+```text
+delta target similarity =
+converted-output similarity
+-
+original-source similarity
+```
+
+That was one of the most useful findings from our previous STS work.
+
+### What we will deliberately NOT measure
+
+No:
+
+* deception success;
+* “would an employee believe this?” score;
+* fake/real classification;
+* statistical significance;
+* general XTTS-vs-RVC-vs-Seed-VC ranking;
+* arbitrary combined “quality score.”
+
+And CAMPPlus will remain **speaker-embedding evidence, not proof of human speaker recognition**.
+
+## Why this is much stronger
+
+After this, Chapter 7 can make a very specific statement:
+
+> Under fixed scenario-relevant German utterances, the three implemented approaches were evaluated for content preservation, target-speaker embedding similarity, processing time, and technical failure behavior. The evaluation does not estimate deception success; it tests whether the technical identity-presentation conditions assumed by the threat model can be instantiated by the tested implementations.
+
+That is a **strong scientific demonstration** rather than a weak experiment.
+
+The two sentences are also intentionally matched at **22 words each**, which removes one obvious confound when comparing their processing behavior.
+
+### Do only the recording now
+
+Don't ask either agent to process them yet.
+
+Record the six WAVs under the conditions above and give them to your project/agents. Once they exist, tell me. Then I will give you **one tightly controlled processing prompt** specifying exactly which RVC, Seed-VC, and XTTS configurations to use and how the measurements must be collected.
+
+[1]: https://github.com/Plachtaa/seed-vc/blob/main/EVAL.md?utm_source=chatgpt.com "seed-vc/EVAL.md at main · Plachtaa/seed-vc · GitHub"
