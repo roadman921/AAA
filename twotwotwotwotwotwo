@@ -1,0 +1,174 @@
+Perform one final INPUT-LEVEL SENSITIVITY CHECK on the six existing scenario recordings.
+
+IMPORTANT:
+Do not modify the originals.
+Do not retrain anything.
+Do not change RVC or Seed-VC configuration.
+Do not tune anything after seeing results.
+
+Original folder:
+
+C:\Users\pcai\Desktop\scenario_audio
+
+Create:
+
+C:\Users\pcai\Desktop\scenario_audio_normalized
+
+==================================================
+1. CREATE GAIN-ONLY COPIES
+==================================================
+
+For each of the six original WAV files:
+
+1. Measure:
+   - integrated loudness in LUFS
+   - RMS level if available
+   - peak dBFS
+   - duration
+   - sample rate
+   - channels
+
+2. Create a duplicate normalized to approximately:
+
+   -28 LUFS integrated
+
+IMPORTANT:
+Use CONSTANT GAIN ONLY.
+
+Do NOT use:
+- compression
+- dynamic normalization
+- limiting unless clipping would otherwise occur
+- denoising
+- EQ
+- silence trimming
+- voice enhancement
+- noise gate
+- resynthesis
+- any other processing
+
+The purpose is to change only input amplitude.
+
+Preserve:
+- exact spoken content
+- timing
+- sample rate
+- channels
+- encoding where practical
+
+If reaching -28 LUFS would cause clipping, do not clip the signal.
+Use the maximum safe constant gain and document the resulting LUFS.
+
+Record for every file:
+
+filename
+original_LUFS
+normalized_LUFS
+original_peak_dBFS
+normalized_peak_dBFS
+gain_applied_dB
+duration_before
+duration_after
+SHA256_original
+SHA256_normalized
+
+Create:
+
+input_level_normalization.csv
+
+==================================================
+2. RERUN THE EXACT FROZEN STS CONFIGURATIONS
+==================================================
+
+Run the already-fixed final configurations on all six normalized copies:
+
+RVC:
+Use exactly the same RVC_Audit8 configuration used in
+sts_scenario_demo_FINAL.zip.
+
+Seed-VC:
+Use exactly the same fixed Seed-VC configuration used in
+sts_scenario_demo_FINAL.zip.
+
+Do not change:
+- checkpoint
+- pitch
+- F0 method
+- index rate
+- target reference
+- Seed-VC parameters
+- preprocessing beyond the amplitude normalization described above
+
+Generate exactly:
+
+6 normalized-input RVC outputs
+6 normalized-input Seed-VC outputs
+
+No retries for subjective quality improvement.
+
+==================================================
+3. USE THE SAME METRICS
+==================================================
+
+Evaluate the normalized-input outputs with the EXACT same protocol already used in
+sts_scenario_demo_FINAL.zip:
+
+- faster-whisper large-v3-turbo
+- same WER/CER procedure
+- same CAMPPlus implementation
+- same target-speaker centroid
+- same timing methodology
+- same failure classification
+
+Do not create a new evaluation protocol.
+
+==================================================
+4. DIRECT PAIRED COMPARISON
+==================================================
+
+For every source recording and system compare:
+
+ORIGINAL INPUT RESULT
+versus
+NORMALIZED INPUT RESULT
+
+Report:
+
+- WER before / after
+- CER before / after
+- CAMPPlus target similarity before / after
+- delta similarity vs source before / after
+- RTF before / after
+- failure status before / after
+
+Create:
+
+input_level_sensitivity_results.csv
+
+==================================================
+5. FINAL QUESTION
+==================================================
+
+Create:
+
+INPUT_LEVEL_SENSITIVITY_REPORT.md
+
+Answer only:
+
+1. Were the original scenario recordings substantially quieter than the normalized copies?
+2. Did gain-only normalization materially change RVC content preservation?
+3. Did it materially change Seed-VC content preservation?
+4. Did CAMPPlus target similarity materially change?
+5. Did any objective failure disappear or newly appear?
+6. Do the results suggest that low source amplitude was an important boundary condition
+   in the original scenario demonstration?
+
+Do not overinterpret small numerical differences.
+
+This is a sensitivity/control check, not a new experiment.
+
+Do not claim causality beyond the paired observations.
+
+Package everything as:
+
+sts_scenario_input_level_check.zip
