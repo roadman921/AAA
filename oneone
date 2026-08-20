@@ -1,0 +1,275 @@
+I am finalizing Chapter 7 of my Bachelor thesis.
+
+The existing `tts_chapter7_evidence.zip` already contains the implementation,
+latency, configuration, anomaly, and qualitative evidence for XTTS-v2.
+
+Chapter 7 is supplementary, so DO NOT expand the experiment.
+
+I only need TWO small additional quantitative evaluations on EXISTING XTTS WAVs:
+
+1. linguistic content preservation using WER/CER
+2. descriptive target-speaker similarity using CAMPPlus
+
+Do NOT:
+- generate new speech,
+- rerun XTTS,
+- retrain anything,
+- test new presets,
+- conduct a listener study,
+- perform a large parameter sweep.
+
+Create:
+
+tts_chapter7_metrics_FINAL.zip
+
+
+==================================================
+1. SELECT THE EXISTING FINAL XTTS BENCHMARK OUTPUTS
+==================================================
+
+Use the final Hand-15 latency benchmark outputs generated with:
+
+- the active golden XTTS speaker embedding
+- the final balanced-natural parameters
+- German language
+- the short / medium / long benchmark texts
+
+Include all existing completed benchmark outputs from pass 1 and pass 2.
+
+The third pass crashed and must not be recreated.
+
+Clearly distinguish:
+- normal/clean generations
+- generations affected by the duration-guard/retry anomaly
+
+Do not silently remove anomalous runs.
+
+
+==================================================
+2. WER / CER — CONTENT PRESERVATION
+==================================================
+
+The intended XTTS text is already known exactly, so unlike the STS evaluation
+there is no need for manual source-audio transcription.
+
+For each benchmark sentence:
+
+- recover the exact text passed to XTTS AFTER text normalization
+- use that normalized text as the ground-truth reference
+
+Use one fixed German-capable ASR model and fixed decoding settings for every WAV.
+
+Prefer the same faster-whisper setup used for the finalized STS metrics if it is
+available:
+
+- German
+- fixed model
+- beam_size=5
+- temperature=0
+- no per-file tuning
+
+For every existing benchmark output calculate:
+
+- sentence category: short / medium / long
+- pass
+- run
+- output WAV
+- anomaly/retry status
+- expected normalized text
+- ASR transcript
+- WER
+- CER
+- substitutions
+- deletions
+- insertions
+- reference word count
+- generation time
+- output duration
+- RTF
+
+Create:
+
+01_CONTENT/xtts_content_metrics.csv
+
+Also create:
+
+01_CONTENT/xtts_content_summary.md
+
+Report separately:
+
+A. clean benchmark outputs
+B. anomaly/retry-affected outputs
+
+Do not average them together without showing the distinction.
+
+Specifically determine whether the long/duration anomaly corresponds to:
+- repeated words,
+- repeated phrases,
+- extra generated content,
+- or another failure type.
+
+WER/CER should be interpreted only as linguistic-content preservation,
+not as human naturalness.
+
+
+==================================================
+3. CAMPPLUS — TARGET-SPEAKER EMBEDDING SIMILARITY
+==================================================
+
+Use ONE fixed CAMPPlus implementation.
+
+Construct a small target-speaker centroid from authentic recordings of the same
+speaker represented by the active XTTS golden embedding.
+
+Requirements:
+
+- authentic target-speaker recordings only
+- unique recordings
+- approximately 8–10 clean clips is sufficient
+- SHA-256 deduplicate them
+- exclude generated XTTS audio
+- exclude the exact `audio4_chunk_080.wav` golden reference itself if possible
+- exclude byte-identical copies of that reference
+
+This evaluation is DESCRIPTIVE only.
+
+The target recordings do not need to form a formal independent held-out corpus for
+this supplementary validation, but document whether they overlap with the broader
+material from which the golden reference was selected.
+
+Create:
+
+02_SIMILARITY/target_reference_set.csv
+
+For the authentic target set calculate:
+- n
+- leave-one-out CAMPPlus mean
+- standard deviation
+- min
+- max
+
+Then calculate for every selected XTTS benchmark output:
+
+- similarity to target centroid
+- duration
+- benchmark category
+- pass/run
+- anomaly status
+
+Create:
+
+02_SIMILARITY/xtts_speaker_similarity.csv
+
+Also give:
+- mean/min/max for clean short outputs
+- mean/min/max for clean medium outputs
+- mean/min/max for clean long outputs
+
+If useful, report anomalous outputs separately.
+
+IMPORTANT:
+Do NOT create a threshold such as:
+"0.9 means the voice is recognized as the target."
+
+CAMPPlus is an embedding similarity metric, not human identity perception.
+
+
+==================================================
+4. OPTIONAL SMALL EMOTION CHECK — ONLY EXISTING FILES
+==================================================
+
+Do this ONLY if the existing final emotion WAVs are clearly identifiable and require
+little additional work.
+
+Evaluate CAMPPlus similarity for:
+
+- neutral
+- angry
+- sad
+- one other clearly documented emotional preset if useful
+
+The purpose is ONLY to see whether the embedding similarity changes under the
+existing emotional/prosodic presets.
+
+Do NOT evaluate whether the emotion sounds convincing.
+Do NOT claim that "angry" is perceived as angry.
+
+If the files/configuration mapping is ambiguous, SKIP this section entirely.
+
+
+==================================================
+5. COMBINE WITH EXISTING LATENCY EVIDENCE
+==================================================
+
+Do not rerun latency.
+
+Use the existing Hand-15 measurements.
+
+Create one compact table:
+
+03_COMBINED/xtts_final_metrics.csv
+
+Columns:
+
+category
+pass
+run
+generation_time_s
+output_duration_s
+RTF
+WER
+CER
+campplus_similarity
+anomaly_status
+
+This table should allow Chapter 7 to discuss:
+
+- generation speed
+- content integrity
+- target-speaker embedding similarity
+- instability
+
+without presenting them as one combined "quality score."
+
+
+==================================================
+6. FINAL REPORT
+==================================================
+
+Create:
+
+00_REPORT/FINAL_TTS_METRICS_REPORT.md
+
+Keep it concise.
+
+Answer exactly:
+
+1. For clean outputs, how well does XTTS preserve the requested German text?
+2. What descriptive CAMPPlus target-speaker similarities are observed?
+3. Do duration-anomaly outputs also show measurable linguistic-content errors?
+4. Can XTTS generate complete medium/long utterances faster than playback under
+   the existing benchmark?
+5. Why does RTF < 1 NOT demonstrate real-time conversational voice cloning?
+6. Do the existing metrics support any claim about human target-speaker recognition?
+   The expected answer is NO unless such evidence genuinely exists.
+7. Does the existing evidence support the narrow conclusion that the tested XTTS
+   implementation is technically capable of producing target-conditioned German
+   speech, while emotional control and generation stability remain limitations?
+
+Clearly tag conclusions as:
+[MEASURED]
+[DERIVED]
+[QUALITATIVE]
+[NOT SUPPORTED]
+
+Do not turn this into a new experiment.
+
+Finally create:
+
+tts_chapter7_metrics_FINAL.zip
+
+and report:
+- path
+- ZIP size
+- strongest 3 quantitative findings
+- any issue serious enough to prevent Chapter 7 from using the results
