@@ -1,0 +1,543 @@
+Yes — **a minimal GitHub repository plus a leaner appendix is a good idea**, as long as you do not cut the evidence needed to substantiate Chapter 7.
+
+Your repository does **not** need to be a dump of the entire development environment. It only needs enough material for someone to understand and, where possible, reproduce the **final evaluation**. Likewise, the appendix should document the final method, not every failed experiment or development step.
+
+The division I recommend is:
+
+**Thesis / Appendix:** what was done and with which final settings.
+**GitHub:** scripts, machine-readable results, exact configs, and technical evidence.
+**Do not publish:** raw speaker recordings, identifiable generated audio, model weights, virtual environments, caches, training checkpoints, temporary experiments, or huge logs.
+
+Your Chapter 7 already states that the evaluation is bounded to the final configurations, and the appendix is specifically there to support reproducibility rather than document the entire development history.
+
+## Prompt 1 — XTTS / TTS collection
+
+Run this prompt with a coding agent **inside your XTTS working directory**:
+
+```text
+I am preparing the final minimal reproducibility repository for my Bachelor thesis.
+
+Your task is to inspect this entire XTTS/TTS project directory and CREATE A NEW EXPORT DIRECTORY named:
+
+thesis_repository_export/tts_xtts/
+
+Do not delete, rename, move, or modify any original project files. Only copy files into the export directory.
+
+The goal is NOT to archive the entire development environment. The goal is to collect the minimum set of files necessary to support and reproduce the FINAL thesis evaluation.
+
+FINAL SYSTEM:
+- Coqui TTS 0.22.0
+- model: tts_models/multilingual/multi-dataset/xtts_v2
+- German
+- zero-shot TTS
+- final target-speaker reference: audio4_chunk_080.wav
+- reference duration approximately 22.8 s
+- final synthesis parameters:
+  temperature = 0.75
+  top_k = 62
+  top_p = 0.86
+  repetition_penalty = 1.09
+  length_penalty = 1.05
+  text splitting enabled
+- output: 24 kHz mono PCM16
+- final scenario evaluation: 2 fixed German texts, 3 generations each
+- evaluation metrics: WER, CER, CAMPPlus cosine similarity, RTF, output flagging, blinded listening ratings
+
+IMPORTANT PRIVACY RULE:
+Do NOT copy genuine target-speaker audio, identifiable generated audio, model weights, embeddings that could be treated as speaker data, or other personal audio into the public export. Instead create hashes/manifests for those files when they are needed for traceability.
+
+Collect only the following:
+
+1. FINAL CODE
+Copy only scripts actually needed for:
+- XTTS inference
+- final scenario generation
+- WER/CER evaluation
+- CAMPPlus evaluation
+- RTF/timing measurement
+- output flagging or evaluation
+- text normalization
+- creation/processing of the final result files
+
+Do not copy abandoned scripts or unrelated experiments unless a final script imports them.
+
+2. FINAL CONFIGURATION
+Create:
+tts_xtts/config/
+
+Include:
+- final XTTS inference configuration
+- relevant model/config identifiers
+- Python/package versions if already recorded
+- hardware/environment information if already available
+- any patches required for the final run
+
+If configuration exists only inside source code, extract the final settings into a human-readable file:
+final_xtts_config.txt
+
+Do not change the actual implementation.
+
+3. SCENARIO TEXTS
+Create:
+tts_xtts/evaluation/
+
+Include a UTF-8 text or CSV file containing exactly the two final German scenario utterances.
+
+4. MACHINE-READABLE RESULTS
+Copy the FINAL results used in the thesis, preferably CSV/JSON:
+- per-output generation time
+- audio duration
+- RTF
+- WER
+- CER
+- CAMPPlus similarity
+- flag status
+- any final failure reason
+- blinded ratings if stored for XTTS
+
+Do not include obsolete benchmark results unless Chapter 7 or the appendix explicitly uses them.
+
+5. FINAL LISTENING MATERIAL METADATA
+Do not copy private audio.
+
+Instead create a manifest containing:
+- anonymous output ID
+- original internal filename
+- SHA-256 hash
+- duration if available
+- scenario
+- system
+- run number
+
+6. TARGET REFERENCE TRACEABILITY
+Do not copy audio4_chunk_080.wav.
+
+Create:
+target_reference_manifest.txt
+
+containing:
+- internal filename
+- duration
+- sample rate/channels if known
+- SHA-256 hash
+- statement that the audio is intentionally excluded for privacy
+
+7. REPRODUCIBILITY INFORMATION
+Create:
+README.md
+
+The README must briefly explain:
+- what this folder contains
+- what XTTS version/model was used
+- final reference duration
+- final inference parameters
+- the two scenario conditions
+- number of final outputs
+- which files correspond to the final thesis results
+- that speaker audio and model weights are intentionally excluded
+- how the evaluation scripts would be run if suitable local audio were supplied
+
+Keep this short and technical.
+
+8. FILE MANIFEST
+Create:
+MANIFEST.csv
+
+Columns:
+relative_path,file_type,purpose,sha256
+
+Calculate SHA-256 for every exported file.
+
+9. EXCLUDE
+Do NOT export:
+- .git/
+- venv/
+- .venv/
+- __pycache__/
+- cache/
+- model weights
+- downloaded XTTS models
+- raw target-speaker recordings
+- generated WAV files containing the target identity
+- temporary outputs
+- duplicated outputs
+- failed development attempts not used in the thesis
+- screenshots
+- IDE files
+- package caches
+- full historical logs unless required to verify a final thesis result
+- unrelated experiments
+
+10. FINAL CHECK
+
+After creating the folder, print:
+
+A. the complete exported directory tree
+B. total number of files
+C. total export size
+D. a list of excluded privacy-sensitive files that were intentionally represented only by hashes
+E. any final thesis result for which you could not find supporting files
+
+Do not invent missing evidence.
+
+The final export should be as small as reasonably possible while still supporting the final Chapter 7 XTTS evaluation.
+```
+
+---
+
+# Prompt 2 — RVC + Seed-VC / STS collection
+
+Run this separately **from the directory containing your RVC/Seed-VC work and evaluation files**:
+
+```text
+I am preparing the final minimal reproducibility repository for my Bachelor thesis.
+
+Inspect the complete RVC and Seed-VC project/evaluation directories and CREATE A NEW EXPORT DIRECTORY:
+
+thesis_repository_export/sts_voice_conversion/
+
+Do not delete, move, rename, or modify original files. Only copy files into the new export.
+
+The goal is NOT to archive the full RVC or Seed-VC installations. The goal is to preserve the minimum material required to support and reproduce the FINAL Bachelor-thesis evaluation.
+
+FINAL RVC CONFIGURATION:
+- RVC v2
+- repository revision:
+  81eed5e8f68b6bed1789f682fe78cdd324495afc
+- final model:
+  RVC_Audit8_e800_s52800.pth
+- 40 kHz
+- approximately 31.59 min prepared training speech
+- 800 epochs / 52,800 steps
+- HuBERT base features
+- RMVPE during preparation/training
+- Harvest for final inference
+- pitch shift +2
+- FAISS index
+- index rate 0.75
+- protect 0.33
+- RMS mix rate 1
+- final evaluation uses six source recordings:
+  3 executive-condition takes
+  3 distressed-customer-condition takes
+
+FINAL SEED-VC CONFIGURATION:
+- repository revision:
+  51383efd921027683c89e5348211d93ff12ac2a8
+- zero-shot voice conversion
+- final target reference approximately 23 s
+- final configuration uses CFM100
+- CFG = 1.0
+- top_p = 0.7
+- temperature = 0.7
+- repetition penalty = 1.5
+- BigVGAN-v2
+- approximately 22.05 kHz output
+- same six human source recordings as RVC
+
+FINAL METRICS:
+- WER
+- CER
+- CAMPPlus cosine similarity
+- source-to-output similarity change where available
+- RTF
+- objective flag status
+- blinded listening ratings
+- input-level sensitivity check
+
+PRIVACY:
+Do NOT export:
+- genuine target-speaker recordings
+- identifiable generated speech
+- human source recordings
+- RVC trained model weights
+- RVC FAISS index if it contains speaker-specific information
+- speaker embeddings
+- private training material
+
+Use hashes and metadata instead.
+
+Collect only:
+
+1. FINAL EVALUATION CODE
+
+Copy only code/scripts needed for:
+- final RVC inference
+- final Seed-VC inference
+- evaluation orchestration
+- WER/CER
+- CAMPPlus
+- RTF/timing
+- text normalization
+- output flagging
+- sensitivity check
+- final result aggregation
+
+Do not copy entire upstream repositories if a small wrapper/script plus repository revision is sufficient.
+
+2. FINAL CONFIGURATION
+
+Create:
+
+sts_voice_conversion/config/rvc/
+sts_voice_conversion/config/seedvc/
+
+Store concise human-readable final configuration files.
+
+For RVC include:
+- upstream revision
+- model identifier
+- sample rate
+- epochs/steps
+- training-data duration
+- F0 extraction methods
+- pitch
+- index rate
+- protect
+- RMS mix rate
+- any final inference settings necessary to reproduce the evaluation
+
+For Seed-VC include:
+- upstream revision
+- final model/config
+- number of inference steps if applicable
+- CFG
+- top_p
+- temperature
+- repetition penalty
+- vocoder
+- sample rate
+- relevant local patch information
+
+3. PATCHES
+
+If either RVC or Seed-VC required local source-code modifications:
+- generate a unified diff / patch file if possible
+- otherwise copy only the modified source file and explain the change in README.md
+
+Do not copy whole repositories merely because one file was patched.
+
+4. SCENARIO MATERIAL
+
+Create:
+sts_voice_conversion/evaluation/scenario_texts.txt
+
+containing the two exact final German scenario utterances.
+
+Also create:
+source_recording_manifest.csv
+
+Columns:
+anonymous_id,scenario,take,internal_filename,duration,sha256
+
+Do NOT copy the recordings.
+
+5. TARGET-SPEAKER MATERIAL
+
+Create separate manifests for:
+- RVC training material
+- Seed-VC target reference
+- genuine target reference material used for CAMPPlus
+
+Include:
+- stable internal filename or anonymous identifier
+- duration
+- SHA-256 hash
+- relevant role in the evaluation
+
+Do not export audio.
+
+For the RVC training corpus, do NOT make one manifest line for every historical raw recording unless necessary.
+Prefer:
+- final prepared dataset summary
+- number of slices
+- total prepared duration
+- hash manifest for the final prepared training set if already available
+
+6. FINAL RESULTS
+
+Copy only final result files used in Chapter 7 and Appendix A.
+
+Include machine-readable per-output values for RVC and Seed-VC:
+- system
+- scenario
+- take
+- intended text
+- source transcript
+- output transcript
+- WER
+- CER
+- source WER where retained
+- CAMPPlus target similarity
+- source similarity
+- similarity delta if available
+- processing time
+- source duration
+- RTF
+- flag status
+- failure reason
+
+Also copy:
+- final blinded-rating results
+- final input-level sensitivity results
+
+Do not include invalid historical Seed-VC outputs or obsolete RVC models unless needed to explain the final evaluation.
+
+7. INPUT-LEVEL SENSITIVITY CHECK
+
+Preserve:
+- original integrated loudness measurements
+- target normalization level (-28 LUFS)
+- resulting WER/CER/CAMPPlus summary
+- script used for gain-only adjustment if available
+
+Do not copy the normalized WAVs unless they are non-identifiable and publication is explicitly permitted. Prefer hashes/results.
+
+8. README
+
+Create:
+sts_voice_conversion/README.md
+
+Keep it concise.
+
+Explain:
+- RVC and Seed-VC were evaluated on the same six source performances
+- all systems targeted the same real target speaker
+- exact upstream repository revisions
+- major final configuration parameters
+- which result file corresponds to the thesis tables
+- why audio/model weights are excluded
+- how a researcher with suitable replacement recordings could repeat the pipeline
+
+9. MANIFEST
+
+Create:
+MANIFEST.csv
+
+Columns:
+relative_path,file_type,purpose,sha256
+
+Hash every exported file.
+
+10. EXCLUDE
+
+Do not export:
+- entire upstream RVC repository unless absolutely necessary
+- entire Seed-VC repository unless absolutely necessary
+- .git/
+- venv/
+- conda environments
+- model caches
+- Hugging Face caches
+- checkpoints
+- .pth model weights
+- FAISS speaker index if privacy-sensitive
+- target speaker audio
+- STS human-source audio
+- generated target-speaker audio
+- temporary conversion files
+- obsolete models
+- invalid Seed-VC 30-step outputs
+- exploratory generations not reported in the final thesis
+- historical comparison models not used in Chapter 7
+- duplicated logs
+- IDE files
+- screenshots
+
+11. FINAL REPORT
+
+After creating the export, show:
+
+A. complete directory tree
+B. number of exported files
+C. total size
+D. which private files were replaced with hashes
+E. which upstream dependencies must be downloaded separately
+F. any thesis claim/result for which supporting evidence could not be located
+
+Do not invent missing files.
+
+The final repository export should be the smallest clean reproducibility package that still supports the final RVC and Seed-VC results reported in the Bachelor thesis.
+```
+
+## Then merge them into one GitHub repository
+
+I would ultimately structure GitHub approximately like this:
+
+```text
+Final_Bachelor_Thesis/
+│
+├── README.md
+├── LICENSE
+│
+├── evaluation/
+│   ├── scenario_texts.txt
+│   ├── final_results.csv
+│   ├── blinded_ratings.csv
+│   └── sensitivity_results.csv
+│
+├── xtts/
+│   ├── README.md
+│   ├── config/
+│   ├── scripts/
+│   └── manifests/
+│
+├── rvc/
+│   ├── README.md
+│   ├── config/
+│   ├── scripts/
+│   └── manifests/
+│
+├── seed_vc/
+│   ├── README.md
+│   ├── config/
+│   ├── scripts/
+│   └── manifests/
+│
+└── docs/
+    └── MANIFEST.csv
+```
+
+You absolutely **do not need to upload 159 minutes of recordings, RVC checkpoints, generated WAVs, complete cloned repositories, Python environments, or GBs of model data**.
+
+## How minimal can the Appendix become?
+
+Yes, I would reduce it — but **not aggressively enough to recreate your supervisor's criticism that the technical work is poorly documented**.
+
+The bare minimum appendix I would keep is:
+
+```text
+A.1 Final Technical Environment and Configurations
+A.2 Evaluation Material and Procedure
+A.3 Metrics and Blinded Inspection
+A.4 Sensitivity Check and Reproducibility Repository
+```
+
+You can merge several current sections.
+
+I would retain the **configuration table** because it makes XTTS/RVC/Seed settings immediately traceable. Keep the two exact German scenario texts because they define your test material. Keep the WER/CER and RTF definitions, the CAMPPlus interpretation, and the listening-scale anchors. Keep the sensitivity table because it answers the obvious objection that the unusually low STS source level could explain the results. Everything else can be concise.
+
+The repository can carry:
+
+* detailed scripts;
+* dependency versions;
+* exact ASR settings;
+* text normalization implementation;
+* individual results;
+* logs;
+* hashes;
+* patches.
+
+The thesis does **not** need to reproduce all of that in prose.
+
+### One important distinction
+
+Don't shrink the appendix **before** the GitHub export exists.
+
+First create the clean repository. Then you can safely replace sentences like:
+
+> “The exact ASR configuration, transcription-normalization procedure, and metric scripts used for the final calculations are included in the reproducibility repository.”
+
+because the reader will actually be able to find them there.
+
+That gives you the cleanest final thesis: **short appendix, small repository, but strong traceability.**
